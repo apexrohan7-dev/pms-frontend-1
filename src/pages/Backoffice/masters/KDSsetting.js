@@ -60,6 +60,7 @@ export default function KDSsettings() {
       const next = prev.slice(); next[idx] = saved; return next;
     });
   };
+  
   const afterDelete = (id) => {
     setShowDelete(false); setToDelete(null);
     setRows(prev => prev.filter(r => (r._id || r.id) !== id));
@@ -77,10 +78,10 @@ export default function KDSsettings() {
           <div style={{ display: "flex", gap: 8 }}>
             <input
               className="res-select"
-              placeholder="Search by name / display / printer"
+              placeholder="Search by property / print / kot"
               value={q}
               onChange={(e) => { setQ(e.target.value); setPage(1); }}
-              style={{ minWidth: 320 }}
+              style={{ minWidth: 280 }}
             />
             <select
               className="res-select"
@@ -98,7 +99,7 @@ export default function KDSsettings() {
           <div className="panel-h">
             <span>KDS Settings</span>
             <span className="small" style={{ color: "var(--muted)" }}>
-              {loading ? "Loading‚Ä¶" : `Total: ${total || rows.length}`}
+              {loading ? "LoadingÖ" : `Total: ${total || rows.length}`}
             </span>
           </div>
           <div className="panel-b">
@@ -108,18 +109,17 @@ export default function KDSsettings() {
               <table className="table">
                 <thead>
                   <tr>
-                    <th style={{ width: 90 }}>Action</th>
-                    <th>Name</th>
-                    <th>Display Location</th>
-                    <th>Printer</th>
-                    <th>Active</th>
+                    <th style={{ width: 100 }}>Action</th>
+                    <th>Property Name</th>
+                    <th>Print Setting</th>
+                    <th>Kot Setting</th>
                     <th>Created</th>
                     <th>Updated</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(!rows || rows.length === 0) && !loading && (
-                    <tr className="no-rows"><td colSpan={7}>No KDS found</td></tr>
+                    <tr className="no-rows"><td colSpan={6}>No KDS settings found</td></tr>
                   )}
 
                   {rows?.map(r => {
@@ -127,13 +127,12 @@ export default function KDSsettings() {
                     return (
                       <tr key={id}>
                         <td>
-                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>‚úèÔ∏è</button>
-                          <button className="btn" style={btnSm} onClick={() => askDelete(r)}>üóëÔ∏è</button>
+                          <button className="btn" style={btnSm} onClick={() => openEdit(r)} title="Edit">??</button>
+                          <button className="btn" style={btnSm} onClick={() => askDelete(r)} title="Delete">???</button>
                         </td>
-                        <td>{r.name}</td>
-                        <td>{r.displayLocation}</td>
-                        <td>{r.printer || "‚Äî"}</td>
-                        <td><OnOff value={r.isActive} /></td>
+                        <td>{r.propertyName || "ó"}</td>
+                        <td><Badge value={r.printSetting} color="blue" /></td>
+                        <td><Badge value={r.kotSetting} color="green" /></td>
                         <td>{fmtDate(r.createdAt)}</td>
                         <td>{fmtDate(r.updatedAt)}</td>
                       </tr>
@@ -147,13 +146,13 @@ export default function KDSsettings() {
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginTop: 8 }}>
               <button className="btn" disabled={page <= 1 || loading}
                 onClick={() => setPage(p => Math.max(1, p - 1))}>
-                ‚Äπ Prev
+                ã Prev
               </button>
               <span className="small" style={{ alignSelf: "center", color: "var(--muted)" }}>Page {page}</span>
               <button className="btn"
                 disabled={loading || (page * limit >= total)}
                 onClick={() => setPage(p => p + 1)}>
-                Next ‚Ä∫
+                Next õ
               </button>
             </div>
           </div>
@@ -170,8 +169,8 @@ export default function KDSsettings() {
 
       {showDelete && (
         <ConfirmModal
-          title="Delete KDS?"
-          message={`Delete KDS "${toDelete?.name}"? This cannot be undone.`}
+          title="Delete KDS Setting?"
+          message={`Delete KDS setting for "${toDelete?.propertyName}"? This cannot be undone.`}
           confirmText="Delete"
           onClose={() => { setShowDelete(false); setToDelete(null); }}
           onConfirm={async () => {
@@ -192,63 +191,180 @@ function KDSFormModal({ initial, onClose, onSaved }) {
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
 
-  const [name, setName] = useState(initial?.name || "");
-  const [displayLocation, setDisplayLocation] = useState(initial?.displayLocation || "");
-  const [printer, setPrinter] = useState(initial?.printer || "");
-  const [isActive, setIsActive] = useState(initial?.isActive ?? true);
+  const [propertyName, setPropertyName] = useState(initial?.propertyName || "");
+  const [printSetting, setPrintSetting] = useState(initial?.printSetting || "2 Inch");
+  const [kotSetting, setKotSetting] = useState(initial?.kotSetting || "2 Inch");
+
+  const [properties, setProperties] = useState([]);
+
+  // Load properties for dropdown
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await apiFetch("/api/properties", { auth: true });
+        const data = res?.data || res || [];
+        setProperties(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error("Failed to load properties:", e);
+      }
+    })();
+  }, []);
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    setErr(""); setOk("");
+    setErr(""); 
+    setOk("");
 
-    if (!name.trim()) return setErr("Name is required");
+    // Validation
+    if (!propertyName || !propertyName.trim()) {
+      return setErr("Property Name is required");
+    }
+    if (!printSetting) {
+      return setErr("Print Setting is required");
+    }
+    if (!kotSetting) {
+      return setErr("Kot Setting is required");
+    }
 
-    const payload = { name, displayLocation, printer, isActive };
+    const payload = { 
+      propertyName: propertyName.trim(), 
+      printSetting, 
+      kotSetting 
+    };
+
+    console.log("Saving KDS Setting:", payload);
 
     setSaving(true);
     try {
       let saved;
       if (isEdit) {
         const id = initial._id || initial.id;
-        saved = await apiFetch(`/api/kdssettings/${id}`, { method: "PATCH", auth: true, body: JSON.stringify(payload) });
+        saved = await apiFetch(`/api/kdssettings/${id}`, { 
+          method: "PATCH", 
+          auth: true, 
+          body: JSON.stringify(payload) 
+        });
       } else {
-        saved = await apiFetch("/api/kdssettings", { method: "POST", auth: true, body: JSON.stringify(payload) });
+        saved = await apiFetch("/api/kdssettings", { 
+          method: "POST", 
+          auth: true, 
+          body: JSON.stringify(payload) 
+        });
       }
-      setOk("Saved.");
-      onSaved(saved);
+      setOk("Saved successfully!");
+      setTimeout(() => onSaved(saved), 500);
     } catch (e2) {
-      setErr(e2?.message || "Failed to save KDS.");
+      setErr(e2?.message || "Failed to save KDS setting.");
     } finally {
       setSaving(false);
     }
   };
 
+  const handleReset = () => {
+    if (isEdit) {
+      setPropertyName(initial?.propertyName || "");
+      setPrintSetting(initial?.printSetting || "2 Inch");
+      setKotSetting(initial?.kotSetting || "2 Inch");
+    } else {
+      setPropertyName("");
+      setPrintSetting("2 Inch");
+      setKotSetting("2 Inch");
+    }
+    setErr("");
+    setOk("");
+  };
+
   return (
-    <Modal title={isEdit ? "Edit KDS" : "Create KDS"} onClose={onClose}>
+    <Modal title={isEdit ? "Edit KDS Setting" : "Add KDS Setting"} onClose={onClose}>
       {err && <Banner type="err">{err}</Banner>}
       {ok && <Banner type="ok">{ok}</Banner>}
 
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-        <Field label="Name" required>
-          <input className="input" value={name} onChange={e => setName(e.target.value)} />
-        </Field>
-        <Field label="Display Location">
-          <input className="input" value={displayLocation} onChange={e => setDisplayLocation(e.target.value)} />
-        </Field>
-        <Field label="Printer">
-          <input className="input" value={printer} onChange={e => setPrinter(e.target.value)} />
-        </Field>
-        <Field label="Active">
-          <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} />
-            <span>{isActive ? "Yes" : "No"}</span>
-          </label>
-        </Field>
+      <form onSubmit={onSubmit}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 20 }}>
+          {/* Property Name */}
+          <Field label="Property Name" required>
+            <select 
+              className="input" 
+              value={propertyName} 
+              onChange={e => setPropertyName(e.target.value)}
+              style={{ cursor: "pointer" }}
+            >
+              <option value="">Select Property</option>
+              {properties.map((prop) => (
+                <option key={prop._id || prop.id} value={prop.name}>
+                  {prop.name}
+                </option>
+              ))}
+            </select>
+          </Field>
 
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button type="button" className="btn" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn" disabled={saving}>
-            {saving ? "Saving‚Ä¶" : (isEdit ? "Update" : "Create")}
+          {/* Print Setting */}
+          <Field label="Print Setting" required>
+            <select 
+              className="input" 
+              value={printSetting} 
+              onChange={e => setPrintSetting(e.target.value)}
+              style={{ cursor: "pointer" }}
+            >
+              <option value="">Select Size</option>
+              <option value="2 Inch">2 Inch</option>
+              <option value="3 Inch">3 Inch</option>
+              <option value="4 Inch">4 Inch</option>
+            </select>
+          </Field>
+
+          {/* Kot Setting */}
+          <Field label="Kot Setting" required>
+            <select 
+              className="input" 
+              value={kotSetting} 
+              onChange={e => setKotSetting(e.target.value)}
+              style={{ cursor: "pointer" }}
+            >
+              <option value="">Select Size</option>
+              <option value="2 Inch">2 Inch</option>
+              <option value="3 Inch">3 Inch</option>
+              <option value="4 Inch">4 Inch</option>
+            </select>
+          </Field>
+        </div>
+
+        <div style={{ 
+          display: "flex", 
+          gap: 8, 
+          justifyContent: "flex-start",
+          paddingTop: 16,
+          borderTop: "1px solid #e5e7eb"
+        }}>
+          <button 
+            type="submit" 
+            className="btn" 
+            disabled={saving}
+            style={{
+              background: "#667eea",
+              color: "#fff",
+              padding: "10px 24px",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px"
+            }}
+          >
+            {saving ? "SavingÖ" : "SAVE"}
+          </button>
+          <button 
+            type="button" 
+            className="btn" 
+            onClick={handleReset}
+            style={{
+              background: "#dc2626",
+              color: "#fff",
+              padding: "10px 24px",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px"
+            }}
+          >
+            RESET
           </button>
         </div>
       </form>
@@ -260,70 +376,167 @@ function KDSFormModal({ initial, onClose, onSaved }) {
 function Field({ label, required, children }) {
   return (
     <label style={{ display: "grid", gap: 6 }}>
-      <span className="label" style={{ fontWeight: 700 }}>
-        {label}{required && <span style={{ color: "#b91c1c" }}>*</span>}
+      <span style={{ fontWeight: 600, fontSize: "14px", color: "#374151" }}>
+        {label}
+        {required && <span style={{ color: "#dc2626", marginLeft: 2 }}>*</span>}
       </span>
       {children}
     </label>
   );
 }
+
 function Banner({ type = "ok", children }) {
   const style = type === "err"
     ? { background: "#fef2f2", color: "#991b1b", border: "1px solid #fecaca" }
     : { background: "#dcfce7", color: "#166534", border: "1px solid #bbf7d0" };
-  return <div style={{ ...style, padding: "8px 10px", borderRadius: 10, fontWeight: 700, marginBottom: 10 }}>{children}</div>;
+  return (
+    <div style={{ 
+      ...style, 
+      padding: "10px 12px", 
+      borderRadius: 8, 
+      fontWeight: 600, 
+      marginBottom: 16,
+      fontSize: "14px"
+    }}>
+      {children}
+    </div>
+  );
 }
+
 function Modal({ title, onClose, children }) {
   return (
     <div style={backdropStyle}>
       <div style={modalStyle}>
         <div style={headerStyle}>
-          <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800 }}>{title}</h3>
-          <button onClick={onClose} aria-label="Close" style={xStyle}>√ó</button>
+          <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 600 }}>{title}</h3>
+          <button onClick={onClose} aria-label="Close" style={xStyle}>◊</button>
         </div>
-        <div style={{ padding: 16 }}>{children}</div>
+        <div style={{ padding: 20 }}>{children}</div>
       </div>
     </div>
   );
 }
+
 function ConfirmModal({ title, message, confirmText = "OK", onConfirm, onClose }) {
   const [busy, setBusy] = useState(false);
   return (
     <Modal title={title} onClose={onClose}>
-      <p>{message}</p>
+      <p style={{ marginBottom: 20, color: "#4b5563" }}>{message}</p>
       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-        <button className="btn" onClick={onClose}>Cancel</button>
-        <button className="btn" disabled={busy} onClick={async () => {
-          setBusy(true);
-          try { await onConfirm?.(); onClose(); } finally { setBusy(false); }
-        }}>
-          {busy ? "Working‚Ä¶" : confirmText}
+        <button 
+          className="btn" 
+          onClick={onClose}
+          style={{ padding: "8px 16px" }}
+        >
+          Cancel
+        </button>
+        <button 
+          className="btn" 
+          disabled={busy} 
+          onClick={async () => {
+            setBusy(true);
+            try { 
+              await onConfirm?.(); 
+            } finally { 
+              setBusy(false); 
+            }
+          }}
+          style={{
+            background: "#dc2626",
+            color: "#fff",
+            padding: "8px 16px"
+          }}
+        >
+          {busy ? "WorkingÖ" : confirmText}
         </button>
       </div>
     </Modal>
   );
 }
-function OnOff({ value }) {
-  const on = !!value;
+
+function Badge({ value, color = "blue" }) {
+  const colors = {
+    blue: { bg: "#dbeafe", border: "#93c5fd", text: "#1e40af" },
+    green: { bg: "#dcfce7", border: "#86efac", text: "#166534" },
+    purple: { bg: "#ede9fe", border: "#c4b5fd", text: "#6b21a8" }
+  };
+  const c = colors[color] || colors.blue;
+  
   return (
     <span style={{
-      display: "inline-block", padding: ".15rem .5rem",
-      borderRadius: 999, background: on ? "#ecfdf5" : "#f3f4f6",
-      border: `1px solid ${on ? "#a7f3d0" : "#e5e7eb"}`,
-      color: on ? "#15803d" : "#334155", fontSize: ".75rem", fontWeight: 700
+      display: "inline-block",
+      padding: "4px 10px",
+      borderRadius: 6,
+      background: c.bg,
+      border: `1px solid ${c.border}`,
+      color: c.text,
+      fontSize: "12px",
+      fontWeight: 600
     }}>
-      {on ? "Active" : "Inactive"}
+      {value || "ó"}
     </span>
   );
 }
+
 function fmtDate(d) {
-  if (!d) return "‚Äî";
+  if (!d) return "ó";
   const dt = new Date(d);
-  return Number.isNaN(dt) ? "‚Äî" : dt.toLocaleDateString();
+  return Number.isNaN(dt.getTime()) ? "ó" : dt.toLocaleDateString("en-IN", {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
 }
 
-const btnSm = { padding: ".3rem .5rem", marginRight: 4, fontWeight: 700 };
-const backdropStyle = { position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", display: "grid", placeItems: "center", zIndex: 1000 };
-const modalStyle = { width: "min(600px, calc(100% - 24px))", background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,.22)", overflow: "hidden" };
-const headerStyle = { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid #e5e7eb", background: "#fff" };
-const xStyle = { border: "1px solid #e5e7eb", background: "#fff", color: "#111827", borderRadius: 10, width: 36, height: 36, cursor: "pointer" };
+const btnSm = { 
+  padding: ".4rem .6rem", 
+  marginRight: 6, 
+  fontSize: "16px",
+  border: "1px solid #e5e7eb",
+  background: "#fff",
+  cursor: "pointer",
+  borderRadius: 6
+};
+
+const backdropStyle = { 
+  position: "fixed", 
+  inset: 0, 
+  background: "rgba(0,0,0,.5)", 
+  display: "grid", 
+  placeItems: "center", 
+  zIndex: 1000,
+  backdropFilter: "blur(2px)"
+};
+
+const modalStyle = { 
+  width: "min(800px, 95%)", 
+  background: "#fff", 
+  borderRadius: 12, 
+  boxShadow: "0 20px 60px rgba(0,0,0,.3)", 
+  overflow: "hidden",
+  maxHeight: "90vh",
+  overflowY: "auto"
+};
+
+const headerStyle = { 
+  display: "flex", 
+  alignItems: "center", 
+  justifyContent: "space-between", 
+  padding: "16px 20px", 
+  borderBottom: "1px solid #e5e7eb",
+  background: "#f9fafb"
+};
+
+const xStyle = { 
+  border: "1px solid #d1d5db", 
+  background: "#fff", 
+  borderRadius: 6, 
+  width: 32, 
+  height: 32, 
+  cursor: "pointer",
+  fontSize: "20px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "#6b7280"
+};

@@ -6,6 +6,8 @@ import "../../../components/sidebar/Sidebar.css";
 import "../../../assets/css/commanPage.css";
 
 const PAGE_SIZE = 10;
+// If your Property has a different display field, change this:
+const PROP_NAME_KEY = "name"; // e.g. "title"
 
 export default function DesignationPage() {
   const [rows, setRows] = useState([]);
@@ -16,13 +18,18 @@ export default function DesignationPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
 
+  // properties for dropdown
+  const [propsList, setPropsList] = useState([]);
+  const [propsLoading, setPropsLoading] = useState(false);
+  const [propsErr, setPropsErr] = useState("");
+
   // modals
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [showDelete, setShowDelete] = useState(false);
   const [toDelete, setToDelete] = useState(null);
 
-  // load list
+  // load designations list
   useEffect(() => {
     let ignore = false;
     (async () => {
@@ -49,12 +56,37 @@ export default function DesignationPage() {
     return () => { ignore = true; };
   }, [q, page, limit]);
 
-  // client-side search fallback
+  // load properties for dropdown (once)
+  useEffect(() => {
+    let ignore = false;
+    (async () => {
+      setPropsLoading(true);
+      setPropsErr("");
+      try {
+        // adjust the endpoint/params if needed
+        const res = await apiFetch(`/api/properties?limit=1000`, { auth: true });
+        const data = res?.data || res?.items || res || [];
+        if (!ignore) setPropsList(Array.isArray(data) ? data : []);
+      } catch (e) {
+        if (!ignore) setPropsErr(e?.message || "Failed to load properties.");
+      } finally {
+        if (!ignore) setPropsLoading(false);
+      }
+    })();
+    return () => { ignore = true; };
+  }, []);
+
+  // client-side search fallback (includes property)
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return rows;
     return rows.filter(r =>
-      [r.title, r.description]
+      [
+        r.property?.[PROP_NAME_KEY], // if populated document exists
+        r.propertyName,              // legacy string
+        r.title,
+        r.description,
+      ]
         .filter(Boolean)
         .some(v => String(v).toLowerCase().includes(term))
     );
@@ -92,7 +124,7 @@ export default function DesignationPage() {
           <div style={{ display: "flex", gap: 8 }}>
             <input
               className="res-select"
-              placeholder="Search (title / description)"
+              placeholder="Search (property / title / description)"
               value={q}
               onChange={(e) => { setQ(e.target.value); setPage(1); }}
               style={{ minWidth: 320 }}
@@ -113,7 +145,7 @@ export default function DesignationPage() {
           <div className="panel-h">
             <span>Designations</span>
             <span className="small" style={{ color: "var(--muted)" }}>
-              {loading ? "Loading‚Ä¶" : `Total: ${total || dataToRender.length}`}
+              {loading ? "LoadingÖ" : `Total: ${total || dataToRender.length}`}
             </span>
           </div>
           <div className="panel-b">
@@ -123,7 +155,8 @@ export default function DesignationPage() {
               <table className="table">
                 <thead>
                   <tr>
-                    <th style={{ width: 90 }}>Action</th>
+                    <th style={{ width: 110 }}>Action</th>
+                    <th>Property</th>
                     <th>Title</th>
                     <th>Description</th>
                     <th>Active</th>
@@ -133,19 +166,39 @@ export default function DesignationPage() {
                 </thead>
                 <tbody>
                   {(!dataToRender || dataToRender.length === 0) && !loading && (
-                    <tr className="no-rows"><td colSpan={6}>No designations found</td></tr>
+                    <tr className="no-rows"><td colSpan={7}>No designations found</td></tr>
                   )}
 
                   {dataToRender?.map(r => {
                     const id = r._id || r.id;
+                    const propName =
+                      (r.property && r.property[PROP_NAME_KEY]) ||
+                      r.propertyName || "ó";
                     return (
                       <tr key={id}>
                         <td>
-                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>‚úèÔ∏è</button>
-                          <button className="btn" style={btnSm} onClick={() => askDelete(r)}>üóëÔ∏è</button>
+                          <button
+                            className="btn"
+                            style={btnSm}
+                            onClick={() => openEdit(r)}
+                            aria-label="Edit"
+                            title="Edit"
+                          >
+                            ??
+                          </button>
+                          <button
+                            className="btn"
+                            style={btnSm}
+                            onClick={() => askDelete(r)}
+                            aria-label="Delete"
+                            title="Delete"
+                          >
+                            ???
+                          </button>
                         </td>
+                        <td title={propName}>{propName}</td>
                         <td>{r.title}</td>
-                        <td title={r.description || ""}>{r.description || "‚Äî"}</td>
+                        <td title={r.description || ""}>{r.description || "ó"}</td>
                         <td><OnOff value={r.isActive} /></td>
                         <td>{fmtDate(r.createdAt)}</td>
                         <td>{fmtDate(r.updatedAt)}</td>
@@ -158,16 +211,22 @@ export default function DesignationPage() {
 
             {/* Pagination */}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginTop: 8 }}>
-              <button className="btn" disabled={page <= 1 || loading} onClick={() => setPage(p => Math.max(1, p - 1))}>
-                ‚Äπ Prev
+              <button
+                className="btn"
+                disabled={page <= 1 || loading}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+              >
+                ã Prev
               </button>
-              <span className="small" style={{ alignSelf: "center", color: "var(--muted)" }}>Page {page}</span>
+              <span className="small" style={{ alignSelf: "center", color: "var(--muted)" }}>
+                Page {page}
+              </span>
               <button
                 className="btn"
                 disabled={loading || (!total ? dataToRender.length < limit : page * limit >= total)}
                 onClick={() => setPage(p => p + 1)}
               >
-                Next ‚Ä∫
+                Next õ
               </button>
             </div>
           </div>
@@ -179,6 +238,9 @@ export default function DesignationPage() {
           initial={editing}
           onClose={() => { setShowForm(false); setEditing(null); }}
           onSaved={afterSave}
+          propsList={propsList}
+          propsLoading={propsLoading}
+          propsErr={propsErr}
         />
       )}
 
@@ -200,23 +262,43 @@ export default function DesignationPage() {
 }
 
 /* Form Modal */
-function DesignationFormModal({ initial, onClose, onSaved }) {
+function DesignationFormModal({ initial, onClose, onSaved, propsList = [], propsLoading, propsErr }) {
   const isEdit = !!initial;
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
 
+  // resolve initial property id and name from either populated object or legacy fields
+  const initialPropertyId =
+    initial?.property?._id || initial?.property || ""; // supports ObjectId or populated doc
+  const initialPropertyName =
+    (initial?.property && initial?.property[PROP_NAME_KEY]) || initial?.propertyName || "";
+
+  const [property, setProperty] = useState(initialPropertyId); // will store property _id
+  const [propertyName, setPropertyName] = useState(initialPropertyName); // display/legacy
   const [title, setTitle] = useState(initial?.title || "");
   const [description, setDescription] = useState(initial?.description || "");
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
+
+  // keep propertyName in sync for legacy servers that still expect it
+  useEffect(() => {
+    if (!property) { setPropertyName(""); return; }
+    const found = propsList.find(p => (p._id || p.id) === property);
+    if (found) setPropertyName(found[PROP_NAME_KEY] || "");
+  }, [property, propsList]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setErr(""); setOk("");
 
+    if (!property) return setErr("Property is required");
     if (!title.trim()) return setErr("Title is required");
 
     const payload = {
+      // If your backend expects a ref: send `property` as ObjectId
+      property,                 // <-- ObjectId string
+      // For backward compatibility if your schema is still string-based:
+      propertyName: propertyName?.trim() || undefined,
       title: title.trim(),
       description: (description || "").trim(),
       isActive: !!isActive,
@@ -248,15 +330,32 @@ function DesignationFormModal({ initial, onClose, onSaved }) {
     <Modal title={isEdit ? "Edit Designation" : "Create Designation"} onClose={onClose}>
       {err && <Banner type="err">{err}</Banner>}
       {ok && <Banner type="ok">{ok}</Banner>}
+      {propsErr && <Banner type="err">{propsErr}</Banner>}
 
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
         <Row>
+          <Field label="Property" required>
+            <select
+              className="input"
+              value={property}
+              onChange={e => setProperty(e.target.value)}
+              disabled={propsLoading}
+            >
+              <option value="">{propsLoading ? "Loading propertiesÖ" : "Select a property"}</option>
+              {propsList.map(p => {
+                const id = p._id || p.id;
+                const label = p[PROP_NAME_KEY] || id;
+                return (
+                  <option key={id} value={id}>{label}</option>
+                );
+              })}
+            </select>
+          </Field>
+
           <Field label="Title" required>
             <input className="input" value={title} onChange={e => setTitle(e.target.value)} />
           </Field>
-          <Field label="Description">
-            <input className="input" value={description} onChange={e => setDescription(e.target.value)} />
-          </Field>
+
           <Field label="Active">
             <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} />
@@ -265,10 +364,22 @@ function DesignationFormModal({ initial, onClose, onSaved }) {
           </Field>
         </Row>
 
+        <Row>
+          <Field label="Description">
+            <textarea
+              className="input"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              rows={3}
+              placeholder="Optional notes about this designation"
+            />
+          </Field>
+        </Row>
+
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <button type="button" className="btn" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn" disabled={saving}>
-            {saving ? "Saving‚Ä¶" : (isEdit ? "Update" : "Create")}
+          <button type="submit" className="btn" disabled={saving || propsLoading}>
+            {saving ? "SavingÖ" : (isEdit ? "Update" : "Create")}
           </button>
         </div>
       </form>
@@ -276,7 +387,7 @@ function DesignationFormModal({ initial, onClose, onSaved }) {
   );
 }
 
-/* ‚Äî‚Äî‚Äî Tiny UI helpers ‚Äî‚Äî‚Äî */
+/* óóó Tiny UI helpers óóó */
 function Row({ children }) {
   return <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(3, minmax(160px, 1fr))" }}>{children}</div>;
 }
@@ -302,7 +413,7 @@ function Modal({ title, onClose, children }) {
       <div style={modalStyle}>
         <div style={headerStyle}>
           <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800 }}>{title}</h3>
-          <button onClick={onClose} aria-label="Close" style={xStyle}>√ó</button>
+          <button onClick={onClose} aria-label="Close" style={xStyle}>◊</button>
         </div>
         <div style={{ padding: 16 }}>{children}</div>
       </div>
@@ -311,13 +422,31 @@ function Modal({ title, onClose, children }) {
 }
 function ConfirmModal({ title, message, confirmText = "OK", onConfirm, onClose }) {
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
   return (
     <Modal title={title} onClose={onClose}>
+      {err && <Banner type="err">{err}</Banner>}
       <p style={{ marginTop: 0 }}>{message}</p>
       <div className="cp-actions" style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
         <button className="btn" type="button" onClick={onClose}>Cancel</button>
-        <button className="btn" type="button" disabled={busy} onClick={async () => { setBusy(true); try { await onConfirm?.(); onClose(); } finally { setBusy(false); } }}>
-          {busy ? "Working‚Ä¶" : confirmText}
+        <button
+          className="btn"
+          type="button"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            setErr("");
+            try {
+              await onConfirm?.();
+              onClose();
+            } catch (e) {
+              setErr(e?.message || "Failed to complete the action.");
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          {busy ? "WorkingÖ" : confirmText}
         </button>
       </div>
     </Modal>
@@ -331,7 +460,8 @@ function OnOff({ value }) {
       borderRadius: 999, background: on ? "#ecfdf5" : "#f3f4f6",
       border: `1px solid ${on ? "#a7f3d0" : "#e5e7eb"}`,
       color: on ? "#15803d" : "#334155", fontSize: ".75rem", fontWeight: 700
-    }}>
+    }}
+    aria-label={on ? "Active" : "Inactive"}>
       {on ? "Active" : "Inactive"}
     </span>
   );
@@ -344,7 +474,9 @@ const xStyle = { border: "1px solid #e5e7eb", background: "#fff", color: "#11182
 
 // Safer date formatter
 function fmtDate(d) {
-  if (!d) return "‚Äî";
+  if (!d) return "ó";
   const dt = new Date(d);
-  return Number.isNaN(dt.getTime()) ? "‚Äî" : dt.toLocaleDateString();
+  return Number.isNaN(dt.getTime())
+    ? "ó"
+    : dt.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" });
 }

@@ -1,17 +1,18 @@
+// src/pages/Backoffice/PickDropFacility.js
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../../lib/api";
 import { BackofficeSidebar } from "../../../components/sidebar/backofficesidebar";
 import "../../../components/sidebar/Sidebar.css";
 import "../../../assets/css/commanPage.css";
-import Topbar from "../../../components/layout/Topbar";
+// ? REMOVE THIS LINE:
+// import Topbar from "../../../components/layout/Topbar";
 
 const PAGE_SIZE = 10;
 
 export default function PickDropFacility() {
   const [rows, setRows] = useState([]);
   const [propsList, setPropsList] = useState([]);
-  const [filterProp, setFilterProp] = useState(""); // property filter
-
+  const [filterProp, setFilterProp] = useState("");
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(PAGE_SIZE);
@@ -19,7 +20,6 @@ export default function PickDropFacility() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
 
-  // modals
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [showDelete, setShowDelete] = useState(false);
@@ -49,7 +49,7 @@ export default function PickDropFacility() {
           q,
           page,
           limit,
-          ...(filterProp ? { propertyCode: filterProp } : {}),
+          ...(filterProp ? { branch: filterProp } : {}),
         });
         const res = await apiFetch(`/api/pickdropfacilities?${params.toString()}`, { auth: true });
         const data = res?.data || res?.items || res || [];
@@ -61,7 +61,8 @@ export default function PickDropFacility() {
       } catch (e) {
         if (!ignore) {
           setErr(e?.message || "Failed to load Pick/Drop facilities.");
-          setRows([]); setTotal(0);
+          setRows([]);
+          setTotal(0);
         }
       } finally {
         if (!ignore) setLoading(false);
@@ -75,7 +76,7 @@ export default function PickDropFacility() {
     const term = q.trim().toLowerCase();
     if (!term) return rows;
     return rows.filter(r =>
-      [r.propertyCode, r.code, r.name, r.description, r.type]
+      [r.branch, r.name]
         .filter(Boolean)
         .some(v => String(v).toLowerCase().includes(term))
     );
@@ -96,6 +97,7 @@ export default function PickDropFacility() {
       const next = prev.slice(); next[idx] = saved; return next;
     });
   };
+  
   const afterDelete = (id) => {
     setShowDelete(false); setToDelete(null);
     setRows(prev => prev.filter(r => (r._id || r.id) !== id));
@@ -107,7 +109,8 @@ export default function PickDropFacility() {
       <BackofficeSidebar />
 
       <div className="res-wrap">
-        <Topbar />
+        {/* ? REMOVE THIS LINE: */}
+        {/* <Topbar /> */}
 
         {/* Topbar */}
         <div className="res-topbar">
@@ -117,20 +120,20 @@ export default function PickDropFacility() {
               className="res-select"
               value={filterProp}
               onChange={(e) => { setFilterProp(e.target.value); setPage(1); }}
-              title="Property"
+              title="Branch"
             >
-              <option value="">All Properties</option>
+              <option value="">All Branches</option>
               {propsList.map(p => (
-                <option key={p.code} value={p.code}>{p.code} ‚Äî {p.name}</option>
+                <option key={p.code} value={p.code}>{p.name}</option>
               ))}
             </select>
 
             <input
               className="res-select"
-              placeholder="Search (property / code / name / description)"
+              placeholder="Search (facility name)"
               value={q}
               onChange={(e) => { setQ(e.target.value); setPage(1); }}
-              style={{ minWidth: 320 }}
+              style={{ minWidth: 280 }}
             />
 
             <select
@@ -150,7 +153,7 @@ export default function PickDropFacility() {
           <div className="panel-h">
             <span>Facility List</span>
             <span className="small" style={{ color: "var(--muted)" }}>
-              {loading ? "Loading‚Ä¶" : `Total: ${total || dataToRender.length}`}
+              {loading ? "LoadingÖ" : `Total: ${total || dataToRender.length}`}
             </span>
           </div>
 
@@ -162,19 +165,16 @@ export default function PickDropFacility() {
                 <thead>
                   <tr>
                     <th style={{ width: 90 }}>Action</th>
-                    <th>Property</th>
-                    <th>Code</th>
+                    <th>Branch</th>
                     <th>Name</th>
-                    <th>Type</th>
-                    <th>Description</th>
-                    <th>Active</th>
+                    <th>Pick & Drop</th>
                     <th>Created</th>
                     <th>Updated</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(!dataToRender || dataToRender.length === 0) && !loading && (
-                    <tr className="no-rows"><td colSpan={9}>No facilities found</td></tr>
+                    <tr className="no-rows"><td colSpan={6}>No facilities found</td></tr>
                   )}
 
                   {dataToRender?.map(r => {
@@ -182,15 +182,12 @@ export default function PickDropFacility() {
                     return (
                       <tr key={id}>
                         <td>
-                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>‚úèÔ∏è</button>
-                          <button className="btn" style={btnSm} onClick={() => askDelete(r)}>üóëÔ∏è</button>
+                          <button className="btn" style={btnSm} onClick={() => openEdit(r)} title="Edit">??</button>
+                          <button className="btn" style={btnSm} onClick={() => askDelete(r)} title="Delete">???</button>
                         </td>
-                        <td>{r.propertyCode || "‚Äî"}</td>
-                        <td>{r.code}</td>
-                        <td>{r.name}</td>
-                        <td>{r.type || "‚Äî"}</td>
-                        <td title={r.description || ""}>{r.description || "‚Äî"}</td>
-                        <td><OnOff value={r.isActive} /></td>
+                        <td>{r.branch || "ó"}</td>
+                        <td>{r.name || "ó"}</td>
+                        <td><YesNo value={r.pickAndDrop} /></td>
                         <td>{fmtDate(r.createdAt)}</td>
                         <td>{fmtDate(r.updatedAt)}</td>
                       </tr>
@@ -203,7 +200,7 @@ export default function PickDropFacility() {
             {/* Pagination */}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginTop: 8 }}>
               <button className="btn" disabled={page <= 1 || loading} onClick={() => setPage(p => Math.max(1, p - 1))}>
-                ‚Äπ Prev
+                ã Prev
               </button>
               <span className="small" style={{ alignSelf: "center", color: "var(--muted)" }}>Page {page}</span>
               <button
@@ -211,7 +208,7 @@ export default function PickDropFacility() {
                 disabled={loading || (!total ? dataToRender.length < limit : page * limit >= total)}
                 onClick={() => setPage(p => p + 1)}
               >
-                Next ‚Ä∫
+                Next õ
               </button>
             </div>
           </div>
@@ -230,7 +227,7 @@ export default function PickDropFacility() {
       {showDelete && (
         <ConfirmModal
           title="Delete Facility?"
-          message={`Delete "${toDelete?.name}" (${toDelete?.code})? This cannot be undone.`}
+          message={`Delete facility "${toDelete?.name}"? This cannot be undone.`}
           confirmText="Delete"
           onClose={() => { setShowDelete(false); setToDelete(null); }}
           onConfirm={async () => {
@@ -251,40 +248,45 @@ function PickDropFormModal({ initial, onClose, onSaved, propsList }) {
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
 
-  const [propertyCode, setPropertyCode] = useState(initial?.propertyCode || "");
-  const [code, setCode] = useState(initial?.code || "");
+  const [branch, setBranch] = useState(initial?.branch || "");
   const [name, setName] = useState(initial?.name || "");
-  const [type, setType] = useState(initial?.type || "BOTH"); // PICKUP / DROP / BOTH (optional)
-  const [description, setDescription] = useState(initial?.description || "");
-  const [isActive, setIsActive] = useState(initial?.isActive ?? true);
+  const [pickAndDrop, setPickAndDrop] = useState(initial?.pickAndDrop ?? false);
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    setErr(""); setOk("");
+    setErr("");
+    setOk("");
 
-    if (!code.trim()) return setErr("Code is required");
+    if (!branch) return setErr("Branch is required");
     if (!name.trim()) return setErr("Name is required");
 
     const payload = {
-      propertyCode: propertyCode ? propertyCode.trim().toUpperCase() : "",
-      code: code.trim().toUpperCase(),
+      branch,
       name: name.trim(),
-      type: (type || "").trim().toUpperCase(),
-      description,
-      isActive,
+      pickAndDrop,
     };
+
+    console.log("Saving pick/drop facility:", payload);
 
     setSaving(true);
     try {
       let saved;
       if (isEdit) {
         const id = initial._id || initial.id;
-        saved = await apiFetch(`/api/pickdropfacilities/${id}`, { method: "PATCH", auth: true, body: JSON.stringify(payload) });
+        saved = await apiFetch(`/api/pickdropfacilities/${id}`, {
+          method: "PATCH",
+          auth: true,
+          body: JSON.stringify(payload)
+        });
       } else {
-        saved = await apiFetch("/api/pickdropfacilities", { method: "POST", auth: true, body: JSON.stringify(payload) });
+        saved = await apiFetch("/api/pickdropfacilities", {
+          method: "POST",
+          auth: true,
+          body: JSON.stringify(payload)
+        });
       }
-      setOk("Saved.");
-      onSaved(saved);
+      setOk("Saved successfully!");
+      setTimeout(() => onSaved(saved), 500);
     } catch (e2) {
       setErr(e2?.message || "Failed to save facility.");
     } finally {
@@ -292,55 +294,104 @@ function PickDropFormModal({ initial, onClose, onSaved, propsList }) {
     }
   };
 
+  const handleReset = () => {
+    if (isEdit) {
+      setBranch(initial?.branch || "");
+      setName(initial?.name || "");
+      setPickAndDrop(initial?.pickAndDrop ?? false);
+    } else {
+      setBranch("");
+      setName("");
+      setPickAndDrop(false);
+    }
+    setErr("");
+    setOk("");
+  };
+
   return (
-    <Modal title={isEdit ? "Edit Facility" : "Create Facility"} onClose={onClose}>
+    <Modal title={isEdit ? "Edit Facility" : "Add Facility"} onClose={onClose}>
       {err && <Banner type="err">{err}</Banner>}
       {ok && <Banner type="ok">{ok}</Banner>}
 
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-        <Row>
-          <Field label="Property">
+      <form onSubmit={onSubmit}>
+        {/* Row 1: Branch and Name */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+          <Field label="Branch" required>
             <select
-              className="res-select"
-              value={propertyCode}
-              onChange={(e) => setPropertyCode(e.target.value)}
+              className="input"
+              value={branch}
+              onChange={(e) => setBranch(e.target.value)}
+              style={{ cursor: "pointer", width: "100%" }}
             >
-              <option value="">‚Äî None ‚Äî</option>
-              {propsList.map(p => <option key={p.code} value={p.code}>{p.code} ‚Äî {p.name}</option>)}
+              <option value="">Select Branch</option>
+              {propsList.map(p => (
+                <option key={p.code} value={p.code}>{p.name}</option>
+              ))}
             </select>
           </Field>
-          <Field label="Code" required>
-            <input className="input" value={code} onChange={e => setCode(e.target.value)} />
-          </Field>
+
           <Field label="Name" required>
-            <input className="input" value={name} onChange={e => setName(e.target.value)} />
+            <input
+              className="input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter facility name"
+            />
           </Field>
-        </Row>
+        </div>
 
-        <Row>
-          <Field label="Type">
-            <select className="res-select" value={type} onChange={(e) => setType(e.target.value)}>
-              {["PICKUP", "DROP", "BOTH"].map(t => <option key={t} value={t}>{t}</option>)}
+        {/* Row 2: Pick & Drop */}
+        <div style={{ marginBottom: 20 }}>
+          <Field label="Pick & Drop">
+            <select
+              className="input"
+              value={pickAndDrop ? "Yes" : "No"}
+              onChange={(e) => setPickAndDrop(e.target.value === "Yes")}
+              style={{ cursor: "pointer", width: "100%" }}
+            >
+              <option value="No">No</option>
+              <option value="Yes">Yes</option>
             </select>
           </Field>
-          <Field label="Active">
-            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} />
-              <span>{isActive ? "Yes" : "No"}</span>
-            </label>
-          </Field>
-        </Row>
+        </div>
 
-        <Row>
-          <Field label="Description">
-            <textarea className="input" rows={2} value={description} onChange={e => setDescription(e.target.value)} />
-          </Field>
-        </Row>
-
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button type="button" className="btn" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn" disabled={saving}>
-            {saving ? "Saving‚Ä¶" : (isEdit ? "Update" : "Create")}
+        {/* Buttons */}
+        <div style={{
+          display: "flex",
+          gap: 8,
+          justifyContent: "flex-start",
+          paddingTop: 16,
+          borderTop: "1px solid #e5e7eb"
+        }}>
+          <button
+            type="submit"
+            className="btn"
+            disabled={saving}
+            style={{
+              background: "#667eea",
+              color: "#fff",
+              padding: "10px 24px",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px"
+            }}
+          >
+            {saving ? "SavingÖ" : "SAVE"}
+          </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={handleReset}
+            style={{
+              background: "#dc2626",
+              color: "#fff",
+              padding: "10px 24px",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px"
+            }}
+          >
+            RESET
           </button>
         </div>
       </form>
@@ -348,69 +399,165 @@ function PickDropFormModal({ initial, onClose, onSaved, propsList }) {
   );
 }
 
-/* ---------- Tiny UI helpers ---------- */
-function Row({ children }) {
-  return <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(3, minmax(160px, 1fr))" }}>{children}</div>;
-}
+/* ---------- UI Helpers ---------- */
 function Field({ label, required, children }) {
   return (
     <label style={{ display: "grid", gap: 6 }}>
-      <span className="label" style={{ fontWeight: 700 }}>
-        {label} {required && <span style={{ color: "#b91c1c" }}>*</span>}
+      <span style={{ fontWeight: 600, fontSize: "14px", color: "#374151" }}>
+        {label}
+        {required && <span style={{ color: "#dc2626", marginLeft: 2 }}>*</span>}
       </span>
       {children}
     </label>
   );
 }
+
 function Banner({ type = "ok", children }) {
   const style = type === "err"
     ? { background: "#fef2f2", color: "#991b1b", border: "1px solid #fecaca" }
     : { background: "#dcfce7", color: "#166534", border: "1px solid #bbf7d0" };
-  return <div style={{ ...style, padding: "8px 10px", borderRadius: 10, fontWeight: 700, marginBottom: 10 }}>{children}</div>;
+  return (
+    <div style={{
+      ...style,
+      padding: "10px 12px",
+      borderRadius: 8,
+      fontWeight: 600,
+      marginBottom: 16,
+      fontSize: "14px"
+    }}>
+      {children}
+    </div>
+  );
 }
+
 function Modal({ title, onClose, children }) {
   return (
     <div style={backdropStyle}>
       <div style={modalStyle}>
         <div style={headerStyle}>
-          <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800 }}>{title}</h3>
-          <button onClick={onClose} aria-label="Close" style={xStyle}>√ó</button>
+          <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 600 }}>{title}</h3>
+          <button onClick={onClose} aria-label="Close" style={xStyle}>◊</button>
         </div>
-        <div style={{ padding: 16 }}>{children}</div>
+        <div style={{ padding: 20 }}>{children}</div>
       </div>
     </div>
   );
 }
+
 function ConfirmModal({ title, message, confirmText = "OK", onConfirm, onClose }) {
   const [busy, setBusy] = useState(false);
   return (
     <Modal title={title} onClose={onClose}>
-      <p style={{ marginTop: 0 }}>{message}</p>
+      <p style={{ marginTop: 0, marginBottom: 20, color: "#4b5563" }}>{message}</p>
       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-        <button className="btn" type="button" onClick={onClose}>Cancel</button>
-        <button className="btn" type="button" disabled={busy} onClick={async () => { setBusy(true); try { await onConfirm?.(); onClose(); } finally { setBusy(false); } }}>
-          {busy ? "Working‚Ä¶" : confirmText}
+        <button
+          className="btn"
+          onClick={onClose}
+          style={{ padding: "8px 16px" }}
+        >
+          Cancel
+        </button>
+        <button
+          className="btn"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            try {
+              await onConfirm?.();
+            } finally {
+              setBusy(false);
+            }
+          }}
+          style={{
+            background: "#dc2626",
+            color: "#fff",
+            padding: "8px 16px"
+          }}
+        >
+          {busy ? "WorkingÖ" : confirmText}
         </button>
       </div>
     </Modal>
   );
 }
-function OnOff({ value }) {
-  const on = !!value;
+
+function YesNo({ value }) {
+  const isYes = !!value;
   return (
     <span style={{
-      display: "inline-block", padding: ".15rem .5rem",
-      borderRadius: 999, background: on ? "#ecfdf5" : "#f3f4f6",
-      border: `1px solid ${on ? "#a7f3d0" : "#e5e7eb"}`,
-      color: on ? "#15803d" : "#334155", fontSize: ".75rem", fontWeight: 700
+      display: "inline-block",
+      padding: ".15rem .5rem",
+      borderRadius: 999,
+      background: isYes ? "#dcfce7" : "#f3f4f6",
+      border: `1px solid ${isYes ? "#bbf7d0" : "#e5e7eb"}`,
+      color: isYes ? "#166534" : "#334155",
+      fontSize: ".75rem",
+      fontWeight: 700
     }}>
-      {on ? "Active" : "Inactive"}
+      {isYes ? "Yes" : "No"}
     </span>
   );
 }
-const btnSm = { padding: ".3rem .5rem", marginRight: 4, fontWeight: 700 };
-const backdropStyle = { position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", display: "grid", placeItems: "center", zIndex: 1000 };
-const modalStyle = { width: "min(900px, calc(100% - 24px))", background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,.22)", overflow: "hidden" };
-const headerStyle = { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid #e5e7eb", background: "#fff" };
-const xStyle = { border: "1px solid #e5e7eb", background: "#fff", color: "#111827", borderRadius: 10, width: 36, height: 36, cursor: "pointer" };
-function fmtDate(d) { if (!d) return "‚Äî"; const dt = new Date(d); return Number.isNaN(dt) ? "‚Äî" : dt.toLocaleDateString(); }
+
+const btnSm = {
+  padding: ".4rem .6rem",
+  marginRight: 6,
+  fontSize: "16px",
+  border: "1px solid #e5e7eb",
+  background: "#fff",
+  cursor: "pointer",
+  borderRadius: 6
+};
+
+const backdropStyle = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(0,0,0,.5)",
+  display: "grid",
+  placeItems: "center",
+  zIndex: 1000,
+  backdropFilter: "blur(2px)"
+};
+
+const modalStyle = {
+  width: "min(600px, 95%)",
+  background: "#fff",
+  borderRadius: 12,
+  boxShadow: "0 20px 60px rgba(0,0,0,.3)",
+  overflow: "hidden",
+  maxHeight: "90vh",
+  overflowY: "auto"
+};
+
+const headerStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "16px 20px",
+  borderBottom: "1px solid #e5e7eb",
+  background: "#f9fafb"
+};
+
+const xStyle = {
+  border: "1px solid #d1d5db",
+  background: "#fff",
+  borderRadius: 6,
+  width: 32,
+  height: 32,
+  cursor: "pointer",
+  fontSize: "20px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "#6b7280"
+};
+
+function fmtDate(d) {
+  if (!d) return "ó";
+  const dt = new Date(d);
+  return Number.isNaN(dt.getTime()) ? "ó" : dt.toLocaleDateString("en-IN", {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+}

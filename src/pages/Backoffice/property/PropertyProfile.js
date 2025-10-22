@@ -5,7 +5,9 @@ import { apiFetch } from "../../../lib/api";
 // Sidebar + styles
 import {BackofficeSidebar } from "../../../components/sidebar/backofficesidebar";
 import "../../../components/sidebar/Sidebar.css";
-import "../../../assets/css/commanPage.css"; // panels / tables / buttons CSS
+import "../../../assets/css/commanPage.css"; // 
+
+
 
 const PAGE_SIZE = 10;
 

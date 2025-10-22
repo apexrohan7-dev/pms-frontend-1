@@ -6,12 +6,10 @@ import "../../../components/sidebar/Sidebar.css";
 import "../../../assets/css/commanPage.css";
 
 const PAGE_SIZE = 10;
-const getPropCode = () => (localStorage.getItem("currentPropertyCode") || "").toUpperCase();
 
 export default function ZoneMaster() {
   const [rows, setRows] = useState([]);
   const [q, setQ] = useState("");
-  const [areaFilter, setAreaFilter] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(PAGE_SIZE);
   const [total, setTotal] = useState(0);
@@ -21,28 +19,13 @@ export default function ZoneMaster() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
 
-  const [areas, setAreas] = useState([]);
-
-  // areas for dropdown/filter (scoped to property)
-  useEffect(() => {
-    (async () => {
-      try {
-        const params = new URLSearchParams({ limit: 500, isActive: true, propertyCode: getPropCode() });
-        const res = await apiFetch(`/api/areas?${params.toString()}`, { auth: true });
-        const data = res?.data || res || [];
-        setAreas(Array.isArray(data) ? data : []);
-      } catch { /* ignore */ }
-    })();
-  }, []);
-
   // load zones
   useEffect(() => {
     let ignore = false;
     (async () => {
       setLoading(true); setErr("");
       try {
-        const params = new URLSearchParams({ q, page, limit, propertyCode: getPropCode() });
-        if (areaFilter) params.set("areaCode", areaFilter);
+        const params = new URLSearchParams({ q, page, limit });
         const res = await apiFetch(`/api/zones?${params.toString()}`, { auth: true });
         const data = res?.data || res || [];
         const count = res?.total ?? data.length ?? 0;
@@ -52,13 +35,13 @@ export default function ZoneMaster() {
       } finally { if (!ignore) setLoading(false); }
     })();
     return () => { ignore = true; };
-  }, [q, page, limit, areaFilter]);
+  }, [q, page, limit]);
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return rows;
     return rows.filter(r =>
-      [r.code, r.name, r.areaCode, r.cityCode, r.stateCode, r.description]
+      [r.zoneName, r.value]
         .filter(Boolean)
         .some(v => String(v).toLowerCase().includes(term))
     );
@@ -93,20 +76,11 @@ export default function ZoneMaster() {
           <div style={{ display: "flex", gap: 8 }}>
             <input
               className="res-select"
-              placeholder="Search (code / name / area / city / state / desc)"
+              placeholder="Search (zone name / value)"
               value={q}
               onChange={(e) => { setQ(e.target.value); setPage(1); }}
               style={{ minWidth: 320 }}
             />
-            <select
-              className="res-select"
-              value={areaFilter}
-              onChange={(e) => { setAreaFilter(e.target.value); setPage(1); }}
-              title="Filter by Area"
-            >
-              <option value="">All Areas</option>
-              {areas.map(a => <option key={a._id || a.code} value={a.code}>{a.code} ‚Äî {a.name}</option>)}
-            </select>
             <select
               className="res-select"
               value={limit}
@@ -122,7 +96,7 @@ export default function ZoneMaster() {
           <div className="panel-h">
             <span>Zones</span>
             <span className="small" style={{ color: "var(--muted)" }}>
-              {loading ? "Loading‚Ä¶" : `Total: ${total || dataToRender.length}`}
+              {loading ? "LoadingÖ" : `Total: ${total || dataToRender.length}`}
             </span>
           </div>
 
@@ -134,42 +108,32 @@ export default function ZoneMaster() {
                 <thead>
                   <tr>
                     <th style={{ width: 90 }}>Action</th>
-                    <th>Code</th>
-                    <th>Name</th>
-                    <th>Area</th>
-                    <th>City</th>
-                    <th>State</th>
-                    <th>Description</th>
-                    <th>Active</th>
+                    <th>Zone Name</th>
+                    <th>Value</th>
                     <th>Created</th>
                     <th>Updated</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(!dataToRender || dataToRender.length === 0) && !loading && (
-                    <tr className="no-rows"><td colSpan={10}>No zones found</td></tr>
+                    <tr className="no-rows"><td colSpan={5}>No zones found</td></tr>
                   )}
                   {dataToRender?.map(r => {
                     const id = r._id || r.id;
                     return (
                       <tr key={id}>
                         <td>
-                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>‚úèÔ∏è</button>
+                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>??</button>
                           <button
                             className="btn" style={btnSm}
                             onClick={async () => {
                               await apiFetch(`/api/zones/${id}`, { method: "DELETE", auth: true });
                               afterDelete(id);
                             }}
-                          >üóëÔ∏è</button>
+                          >???</button>
                         </td>
-                        <td>{r.code}</td>
-                        <td>{r.name}</td>
-                        <td>{r.areaCode}</td>
-                        <td>{r.cityCode || "‚Äî"}</td>
-                        <td>{r.stateCode || "‚Äî"}</td>
-                        <td title={r.description || ""}>{r.description || "‚Äî"}</td>
-                        <td><OnOff value={r.isActive} /></td>
+                        <td>{r.zoneName || "ó"}</td>
+                        <td>{r.value !== undefined && r.value !== null ? r.value : "ó"}</td>
                         <td>{fmtDate(r.createdAt)}</td>
                         <td>{fmtDate(r.updatedAt)}</td>
                       </tr>
@@ -180,9 +144,9 @@ export default function ZoneMaster() {
             </div>
 
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginTop: 8 }}>
-              <button className="btn" disabled={page <= 1 || loading} onClick={() => setPage(p => Math.max(1, p - 1))}>‚Äπ Prev</button>
+              <button className="btn" disabled={page <= 1 || loading} onClick={() => setPage(p => Math.max(1, p - 1))}>ã Prev</button>
               <span className="small" style={{ alignSelf: "center", color: "var(--muted)" }}>Page {page}</span>
-              <button className="btn" disabled={loading || (!total ? dataToRender.length < limit : page * limit >= total)} onClick={() => setPage(p => p + 1)}>Next ‚Ä∫</button>
+              <button className="btn" disabled={loading || (!total ? dataToRender.length < limit : page * limit >= total)} onClick={() => setPage(p => p + 1)}>Next õ</button>
             </div>
           </div>
         </div>
@@ -191,7 +155,6 @@ export default function ZoneMaster() {
       {showForm && (
         <ZoneFormModal
           initial={editing}
-          areas={areas}
           onClose={() => { setShowForm(false); setEditing(null); }}
           onSaved={afterSave}
         />
@@ -201,43 +164,24 @@ export default function ZoneMaster() {
 }
 
 /* ---------- Modal ---------- */
-function ZoneFormModal({ initial, onClose, onSaved, areas }) {
+function ZoneFormModal({ initial, onClose, onSaved }) {
   const isEdit = !!initial;
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
 
-  const [code, setCode] = useState(initial?.code || "");
-  const [name, setName] = useState(initial?.name || "");
-  const [areaCode, setAreaCode] = useState(initial?.areaCode || "");
-  const [cityCode, setCityCode] = useState(initial?.cityCode || "");
-  const [stateCode, setStateCode] = useState(initial?.stateCode || "");
-  const [description, setDescription] = useState(initial?.description || "");
-  const [isActive, setIsActive] = useState(initial?.isActive ?? true);
-
-  // Auto-fill city/state when area selected (if Area has them)
-  useEffect(() => {
-    if (!areaCode) return;
-    const area = areas.find(a => (a.code || "").toUpperCase() === areaCode.toUpperCase());
-    if (area?.cityCode && !cityCode) setCityCode(area.cityCode);
-    if (area?.stateCode && !stateCode) setStateCode(area.stateCode);
-  }, [areaCode, areas, cityCode, stateCode]);
+  const [zoneName, setZoneName] = useState(initial?.zoneName || "");
+  const [value, setValue] = useState(initial?.value !== undefined ? initial.value : "");
 
   const onSubmit = async (e) => {
     e.preventDefault(); setErr(""); setOk("");
-    if (!code.trim()) return setErr("Code is required");
-    if (!name.trim()) return setErr("Name is required");
-    if (!areaCode.trim()) return setErr("Area is required");
+    
+    if (!zoneName.trim()) return setErr("Zone Name is required");
+    if (value === "" || value === null || value === undefined) return setErr("Value is required");
 
     const payload = {
-      code: code.trim().toUpperCase(),
-      name: name.trim(),
-      areaCode: areaCode.trim().toUpperCase(),
-      cityCode: (cityCode || "").trim().toUpperCase(),
-      stateCode: (stateCode || "").trim().toUpperCase(),
-      description,
-      isActive,
-      propertyCode: getPropCode(),
+      zoneName: zoneName.trim(),
+      value: Number(value),
     };
 
     setSaving(true);
@@ -255,44 +199,55 @@ function ZoneFormModal({ initial, onClose, onSaved, areas }) {
     } finally { setSaving(false); }
   };
 
+  const handleReset = () => {
+    setZoneName("");
+    setValue("");
+    setErr("");
+    setOk("");
+  };
+
   return (
-    <Modal title={isEdit ? "Edit Zone" : "Create Zone"} onClose={onClose}>
+    <Modal title={isEdit ? "Edit Zone" : "Add Zone"} onClose={onClose}>
       {err && <Banner type="err">{err}</Banner>}
       {ok && <Banner type="ok">{ok}</Banner>}
 
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
         <Row>
-          <Field label="Code" required><input className="input" value={code} onChange={e => setCode(e.target.value)} /></Field>
-          <Field label="Name" required><input className="input" value={name} onChange={e => setName(e.target.value)} /></Field>
-          <Field label="Area" required>
-            <select className="res-select" value={areaCode} onChange={e => setAreaCode(e.target.value)}>
-              <option value="">Select Area</option>
-              {areas.map(a => <option key={a._id || a.code} value={a.code}>{a.code} ‚Äî {a.name}</option>)}
-            </select>
+          <Field label="Zone Name" required>
+            <input 
+              className="input" 
+              value={zoneName} 
+              onChange={e => setZoneName(e.target.value)} 
+            />
           </Field>
-        </Row>
-
-        <Row>
-          <Field label="City (optional)"><input className="input" value={cityCode} onChange={e => setCityCode(e.target.value)} /></Field>
-          <Field label="State (optional)"><input className="input" value={stateCode} onChange={e => setStateCode(e.target.value)} /></Field>
-          <Field label="Active">
-            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} />
-              <span>{isActive ? "Yes" : "No"}</span>
-            </label>
+          <Field label="Value" required>
+            <input 
+              className="input" 
+              type="number"
+              step="0.01"
+              value={value} 
+              onChange={e => setValue(e.target.value)} 
+            />
           </Field>
+          <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+            <button 
+              type="button" 
+              className="btn" 
+              style={{ background: "#dc2626", color: "#fff", flex: 1 }} 
+              onClick={handleReset}
+            >
+              RESET
+            </button>
+            <button 
+              type="submit" 
+              className="btn" 
+              style={{ background: "#7c3aed", color: "#fff", flex: 1 }}
+              disabled={saving}
+            >
+              {saving ? "SavingÖ" : (isEdit ? "UPDATE" : "CREATE")}
+            </button>
+          </div>
         </Row>
-
-        <Row>
-          <Field label="Description">
-            <textarea className="input" rows={2} value={description} onChange={e => setDescription(e.target.value)} />
-          </Field>
-        </Row>
-
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button type="button" className="btn" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn" disabled={saving}>{saving ? "Saving‚Ä¶" : (isEdit ? "Update" : "Create")}</button>
-        </div>
       </form>
     </Modal>
   );
@@ -320,29 +275,16 @@ function Modal({ title, onClose, children }) {
       <div style={modalStyle}>
         <div style={headerStyle}>
           <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800 }}>{title}</h3>
-          <button onClick={onClose} aria-label="Close" style={xStyle}>√ó</button>
+          <button onClick={onClose} aria-label="Close" style={xStyle}>◊</button>
         </div>
         <div style={{ padding: 16 }}>{children}</div>
       </div>
     </div>
   );
 }
-function OnOff({ value }) {
-  const on = !!value;
-  return (
-    <span style={{
-      display: "inline-block", padding: ".15rem .5rem",
-      borderRadius: 999, background: on ? "#ecfdf5" : "#f3f4f6",
-      border: `1px solid ${on ? "#a7f3d0" : "#e5e7eb"}`,
-      color: on ? "#15803d" : "#334155", fontSize: ".75rem", fontWeight: 700
-    }}>
-      {on ? "Active" : "Inactive"}
-    </span>
-  );
-}
 const btnSm = { padding: ".3rem .5rem", marginRight: 4, fontWeight: 700 };
 const backdropStyle = { position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", display: "grid", placeItems: "center", zIndex: 1000 };
 const modalStyle = { width: "min(900px, calc(100% - 24px))", background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,.22)", overflow: "hidden" };
 const headerStyle = { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid #e5e7eb", background: "#fff" };
-const xStyle = { border: "1px solid #e5e7eb", background: "#fff", color: "#111827", borderRadius: 10, width: 36, height: 36, cursor: "pointer" };
-function fmtDate(d) { if (!d) return "‚Äî"; const dt = new Date(d); return Number.isNaN(dt) ? "‚Äî" : dt.toLocaleDateString(); }
+const xStyle = { border: "1px solid #e5e5e5", background: "#fff", color: "#111827", borderRadius: 10, width: 36, height: 36, cursor: "pointer" };
+function fmtDate(d) { if (!d) return "ó"; const dt = new Date(d); return Number.isNaN(dt) ? "ó" : dt.toLocaleDateString(); }

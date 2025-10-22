@@ -1,5 +1,5 @@
 // src/pages/Reservation/NewReservations.js
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../../lib/api";
 
@@ -33,6 +33,10 @@ export default function NewReservations() {
   const [rateCode, setRateCode] = useState("BAR");
   const [tariff, setTariff] = useState(2500);
 
+  // ---- tax fields ----
+  const [taxPercentage, setTaxPercentage] = useState(12); // GST 12%
+  const [taxType, setTaxType] = useState("exclusive"); // 'inclusive' or 'exclusive'
+
   // ---- guest & commercial ----
   const [guestName, setGuestName] = useState("");
   const [guestMobile, setGuestMobile] = useState("");
@@ -53,17 +57,78 @@ export default function NewReservations() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
 
-  // ---- derived ----
+  // ---- Auto-generate reservation number on mount for new reservations ----
+  useEffect(() => {
+    if (mode === "create" && !reservationNumber) {
+      setReservationNumber(genResNo());
+    }
+  }, [mode, reservationNumber]);
+
+  // ---- Fetch tax settings from backoffice on mount ----
+  useEffect(() => {
+    const fetchTaxSettings = async () => {
+      try {
+        // Fetch tax configuration from backoffice API
+        const response = await apiFetch("/api/settings/tax");
+        const data = await response.json();
+        if (data.taxPercentage !== undefined) {
+          setTaxPercentage(data.taxPercentage);
+        }
+        if (data.taxType) {
+          setTaxType(data.taxType);
+        }
+      } catch (error) {
+        console.warn("Failed to fetch tax settings, using defaults:", error);
+        // Use default values if API fails (already set in state)
+      }
+    };
+    
+    fetchTaxSettings();
+  }, []);
+
+  // ---- derived calculations ----
   const departureDate = useMemo(
     () => addDays(arrivalDate, Number(nights || 0)),
     [arrivalDate, nights]
   );
-  const totalAmount = useMemo(() => {
+
+  // Base amount calculation
+  const baseAmount = useMemo(() => {
     const n = Number(nights || 0);
     const r = Number(noOfRooms || 0);
     const t = Number(tariff || 0);
     return Math.max(0, n * r * t);
   }, [nights, noOfRooms, tariff]);
+
+  // Tax calculations
+  const taxCalculations = useMemo(() => {
+    const base = Number(baseAmount || 0);
+    const taxPct = Number(taxPercentage || 0) / 100;
+
+    if (taxType === "inclusive") {
+      // Tax is included in the tariff
+      // Base = Total / (1 + tax%)
+      // Tax = Total - Base
+      const actualBase = base / (1 + taxPct);
+      const taxAmount = base - actualBase;
+      return {
+        baseAmount: Math.round(actualBase * 100) / 100,
+        taxAmount: Math.round(taxAmount * 100) / 100,
+        totalAmount: base,
+      };
+    } else {
+      // Tax is exclusive (added on top)
+      // Tax = Base * tax%
+      // Total = Base + Tax
+      const taxAmount = base * taxPct;
+      const totalAmount = base + taxAmount;
+      return {
+        baseAmount: base,
+        taxAmount: Math.round(taxAmount * 100) / 100,
+        totalAmount: Math.round(totalAmount * 100) / 100,
+      };
+    }
+  }, [baseAmount, taxPercentage, taxType]);
 
   // ---- validation & submit ----
   const validate = () => {
@@ -93,6 +158,7 @@ export default function NewReservations() {
     setMealPlan("CP");
     setRateCode("BAR");
     setTariff(2500);
+    // Tax settings remain as fetched from backoffice
     setGuestName("");
     setGuestMobile("");
     setGuestEmail("");
@@ -100,10 +166,11 @@ export default function NewReservations() {
     setReservationMode("OTA");
     setInstruction("");
     setSpecialRequest("");
-    setReservationNumber(genResNo());
     setBillingInstruction("");
     setOk("");
     setErr("");
+    // Auto-generate new reservation number
+    setReservationNumber(genResNo());
   };
 
   const onSubmit = async (e) => {
@@ -131,7 +198,11 @@ export default function NewReservations() {
       rateCode,
       ratePlan: rateCode,
       rate: Number(tariff),
-      amount: totalAmount,
+      baseAmount: taxCalculations.baseAmount,
+      taxPercentage: Number(taxPercentage),
+      taxType,
+      taxAmount: taxCalculations.taxAmount,
+      amount: taxCalculations.totalAmount,
       guestName,
       phone: guestMobile,
       email: guestEmail,
@@ -160,10 +231,10 @@ export default function NewReservations() {
         });
         setOk("Reservation created successfully.");
       }
-      setShowSuccess(true);     // ✅ popup success, stay on page
+      setShowSuccess(true);
     } catch (e2) {
       setErr(e2?.message || "Failed to save reservation.");
-      setShowError(true);       // ✅ popup error
+      setShowError(true);
     } finally {
       setLoading(false);
     }
@@ -179,9 +250,6 @@ export default function NewReservations() {
       <div className="res-wrap">
         <div className="res-topbar">
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              {/* <button type="button" className="btn" onClick={() => setSbOpen(true)} aria-label="Open menu" style={{ padding: ".45rem .6rem" }}>
-                ☰
-              </button> */}
             <h2 style={{ margin: 0 }}>
               {mode === "edit" ? "Edit Reservation" : "New Reservation"}
             </h2>
@@ -193,12 +261,79 @@ export default function NewReservations() {
           </div>
         </div>
 
-        {/* Stay Details */}
+        {/* Guest & Billing */}
         <form className="panel" onSubmit={onSubmit} noValidate>
-          <div className="panel-h">Stay Details</div>
+          <div className="panel-h">Guest & Billing</div>
           <div className="panel-b" style={{ display: "grid", gap: 12 }}>
             {err && <Alert type="err">{err}</Alert>}
             {ok && <Alert type="ok">{ok}</Alert>}
+
+            <Row>
+              <Field label="Guest Name" required>
+                <input className="input" value={guestName} onChange={(e) => setGuestName(e.target.value)} />
+              </Field>
+              <Field label="Mobile No." required>
+                <input className="input" value={guestMobile} onChange={(e) => setGuestMobile(e.target.value)} />
+              </Field>
+              <Field label="Email">
+                <input className="input" type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} />
+              </Field>
+            </Row>
+
+            <Row>
+              <Field label="Sales Person Name">
+                <input className="input" value={salesPerson} onChange={(e) => setSalesPerson(e.target.value)} />
+              </Field>
+              <Field label="Reservation Number" required>
+                <div style={{ position: "relative" }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <input 
+                      className="input" 
+                      value={reservationNumber} 
+                      readOnly
+                      placeholder="Auto-generated"
+                      style={{ flex: 1, background: "#f9fafb", cursor: "not-allowed" }}
+                    />
+                    <button
+                      type="button"
+                      className="btn"
+                      onClick={() => setReservationNumber(genResNo())}
+                      title="Generate new reservation number"
+                      style={{ padding: "0.5rem 0.75rem", whiteSpace: "nowrap", fontSize: "0.85rem" }}
+                    >
+                      Regenerate
+                    </button>
+                  </div>
+                  <div style={{ 
+                    fontSize: "0.7rem", 
+                    color: "#6b7280", 
+                    marginTop: 4,
+                    fontStyle: "italic"
+                  }}>
+                    Auto-generated (Click Regenerate for new number)
+                  </div>
+                </div>
+              </Field>
+              <Field label="Billing Instruction">
+                <input className="input" value={billingInstruction} onChange={(e) => setBillingInstruction(e.target.value)} />
+              </Field>
+            </Row>
+
+            <Row full>
+              <Field label="Instruction">
+                <textarea className="input" rows={3} value={instruction} onChange={(e) => setInstruction(e.target.value)} />
+              </Field>
+              <Field label="Guest Special Request">
+                <textarea className="input" rows={3} value={specialRequest} onChange={(e) => setSpecialRequest(e.target.value)} />
+              </Field>
+            </Row>
+          </div>
+        </form>
+
+        {/* Stay Details */}
+        <form className="panel" onSubmit={onSubmit} noValidate style={{ marginTop: 12 }}>
+          <div className="panel-h">Stay Details</div>
+          <div className="panel-b" style={{ display: "grid", gap: 12 }}>
 
             <Row>
               <Field label="Room Type" required>
@@ -261,9 +396,6 @@ export default function NewReservations() {
               <Field label="Tariff (₹/night)" required>
                 <input className="input" type="number" min="1" value={tariff} onChange={(e) => setTariff(e.target.value)} />
               </Field>
-              <Field label="Total Amount (₹)">
-                <input className="input" value={totalAmount} readOnly />
-              </Field>
               <Field label="Reservation Mode" required>
                 <select className="res-select" value={reservationMode} onChange={(e) => setReservationMode(e.target.value)}>
                   <option value="OTA">OTA</option>
@@ -272,48 +404,67 @@ export default function NewReservations() {
                   <option value="Travel Agent">Travel Agent</option>
                 </select>
               </Field>
+              <div></div>
             </Row>
           </div>
         </form>
 
-        {/* Guest & Billing */}
+        {/* Tax & Amount Details */}
         <form className="panel" onSubmit={onSubmit} noValidate style={{ marginTop: 12 }}>
-          <div className="panel-h">Guest & Billing</div>
+          <div className="panel-h">Amount Details</div>
           <div className="panel-b" style={{ display: "grid", gap: 12 }}>
             <Row>
-              <Field label="Guest Name" required>
-                <input className="input" value={guestName} onChange={(e) => setGuestName(e.target.value)} />
+              <Field label="Tax Type" required>
+                <select className="res-select" value={taxType} onChange={(e) => setTaxType(e.target.value)}>
+                  <option value="exclusive">Tax Exclusive (Tax added on top)</option>
+                  <option value="inclusive">Tax Inclusive (Tax included in tariff)</option>
+                </select>
               </Field>
-              <Field label="Mobile No." required>
-                <input className="input" value={guestMobile} onChange={(e) => setGuestMobile(e.target.value)} />
+              <Field label="Base Amount (₹)">
+                <input 
+                  className="input" 
+                  value={taxCalculations.baseAmount.toFixed(2)} 
+                  readOnly 
+                  style={{ background: "#f9fafb" }}
+                />
               </Field>
-              <Field label="Email">
-                <input className="input" type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} />
+              <Field label="Tax Amount (₹)">
+                <input 
+                  className="input" 
+                  value={taxCalculations.taxAmount.toFixed(2)} 
+                  readOnly 
+                  style={{ background: "#f9fafb" }}
+                />
               </Field>
             </Row>
 
             <Row>
-              <Field label="Sales Person Name">
-                <input className="input" value={salesPerson} onChange={(e) => setSalesPerson(e.target.value)} />
+              <Field label="Total Amount (₹)">
+                <input 
+                  className="input" 
+                  value={taxCalculations.totalAmount.toFixed(2)} 
+                  readOnly 
+                  style={{ background: "#dbeafe", fontWeight: 700, fontSize: "1.1rem" }}
+                />
               </Field>
-              <Field label="Reservation Number" required>
-                <input className="input" value={reservationNumber} onChange={(e) => setReservationNumber(e.target.value)} />
-              </Field>
-              <Field label="Billing Instruction">
-                <input className="input" value={billingInstruction} onChange={(e) => setBillingInstruction(e.target.value)} />
-              </Field>
+              <div style={{ display: "flex", alignItems: "end", padding: "0 8px", gridColumn: "span 2" }}>
+                <div style={{ 
+                  fontSize: "0.8rem", 
+                  color: "#6b7280",
+                  lineHeight: 1.5,
+                  padding: "8px 12px",
+                  background: "#f3f4f6",
+                  borderRadius: 8,
+                  flex: 1
+                }}>
+                  {taxType === "inclusive" 
+                    ? `Tax is included in the tariff amount. The base amount shown is calculated by removing the tax component.` 
+                    : `Tax will be added on top of the base amount. The total includes the calculated tax.`}
+                </div>
+              </div>
             </Row>
 
-            <Row full>
-              <Field label="Instruction">
-                <textarea className="input" rows={3} value={instruction} onChange={(e) => setInstruction(e.target.value)} />
-              </Field>
-              <Field label="Guest Special Request">
-                <textarea className="input" rows={3} value={specialRequest} onChange={(e) => setSpecialRequest(e.target.value)} />
-              </Field>
-            </Row>
-
-            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 8 }}>
               <button type="button" className="btn" onClick={() => navigate("/reservation")} disabled={loading}>
                 Cancel
               </button>
@@ -335,7 +486,7 @@ export default function NewReservations() {
               type="button"
               onClick={() => {
                 setShowSuccess(false);
-                resetForm();            // stay on same page and clear form
+                resetForm();
               }}
             >
               Create Another
@@ -383,12 +534,12 @@ function Field({ label, children, required }) {
 }
 function Alert({ type = "ok", children }) {
   const style = type === "err"
-    ? { background: "#fef2f2", color: "#991b1b", border: "1px solid #fecaca" }
+    ? { background: "#fef2f2", color: "#991b1c", border: "1px solid #fecaca" }
     : { background: "#dcfce7", color: "#166534", border: "1px solid #bbf7d0" };
   return <div style={{ ...style, padding: "8px 10px", borderRadius: 10, fontWeight: 700 }}>{children}</div>;
 }
 
-/* Simple modal using your color palette */
+/* Simple modal */
 function Modal({ title, onClose, children }) {
   return (
     <div className="cp-backdrop" style={backdropStyle}>
@@ -408,9 +559,16 @@ function Modal({ title, onClose, children }) {
 /* ---------- utils ---------- */
 function today(){ const d=new Date(); return d.toISOString().slice(0,10); }
 function addDays(dateStr, days){ const d=new Date(dateStr); d.setDate(d.getDate()+Number(days||0)); return d.toISOString().slice(0,10); }
-function genResNo(){ const d=new Date().toISOString().slice(0,10).replaceAll("-",""); const r=Math.random().toString(36).slice(2,6).toUpperCase(); return `RSV-${d}-${r}`; }
+function genResNo(){ 
+  // Generate unique reservation number: RSV-YYYYMMDD-HHMMSS-RAND
+  const now = new Date();
+  const date = now.toISOString().slice(0,10).replaceAll("-","");
+  const time = now.toTimeString().slice(0,8).replaceAll(":","");
+  const rand = Math.random().toString(36).slice(2,5).toUpperCase();
+  return `RSV-${date}-${time}-${rand}`;
+}
 
-/* ---------- minimal inline styles for modal (matches your blue theme) ---------- */
+/* ---------- modal styles ---------- */
 const backdropStyle = {
   position: "fixed", inset: 0, background: "rgba(0,0,0,.45)",
   display: "grid", placeItems: "center", zIndex: 1000

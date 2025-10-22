@@ -82,7 +82,7 @@ export default function IdentityDetails() {
     return () => { ignore = true; };
   }, [q, page, limit, propertyCode]);
 
-  // client search (when server didn‚Äôt paginate)
+  // client search (when server didn't paginate)
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return rows;
@@ -136,11 +136,11 @@ export default function IdentityDetails() {
               style={{ minWidth: 220 }}
             >
               {properties.length === 0 && (
-                <option value="">Select property‚Ä¶</option>
+                <option value="">Select propertyÖ</option>
               )}
               {properties.map(p => (
                 <option key={p.code} value={(p.code || "").toUpperCase()}>
-                  {(p.code || "").toUpperCase()} ‚Äî {p.name}
+                  {(p.code || "").toUpperCase()} ó {p.name}
                 </option>
               ))}
             </select>
@@ -167,10 +167,10 @@ export default function IdentityDetails() {
           <div className="panel-h">
             <span>
               Identity Details
-              {propertyCode ? ` ‚Äî ${propertyCode}` : ""}
+              {propertyCode ? ` ó ${propertyCode}` : ""}
             </span>
             <span className="small" style={{ color: "var(--muted)" }}>
-              {loading ? "Loading‚Ä¶" : `Total: ${total || dataToRender.length}`}
+              {loading ? "LoadingÖ" : `Total: ${total || dataToRender.length}`}
             </span>
           </div>
 
@@ -185,6 +185,7 @@ export default function IdentityDetails() {
                 <thead>
                   <tr>
                     <th style={{ width: 90 }}>Action</th>
+                    <th>ID</th>
                     <th>Code</th>
                     <th>Name</th>
                     <th>Description</th>
@@ -196,7 +197,7 @@ export default function IdentityDetails() {
                 </thead>
                 <tbody>
                   {(!dataToRender || dataToRender.length === 0) && !loading && (
-                    <tr className="no-rows"><td colSpan={8}>No identity details found</td></tr>
+                    <tr className="no-rows"><td colSpan={9}>No identity details found</td></tr>
                   )}
 
                   {dataToRender?.map(r => {
@@ -204,12 +205,13 @@ export default function IdentityDetails() {
                     return (
                       <tr key={id}>
                         <td>
-                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>‚úèÔ∏è</button>
-                          <button className="btn" style={btnSm} onClick={() => askDelete(r)}>üóëÔ∏è</button>
+                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>??</button>
+                          <button className="btn" style={btnSm} onClick={() => askDelete(r)}>???</button>
                         </td>
+                        <td>{id || "ó"}</td>
                         <td>{r.code}</td>
                         <td>{r.name}</td>
-                        <td title={r.description || ""}>{r.description || "‚Äî"}</td>
+                        <td title={r.description || ""}>{r.description || "ó"}</td>
                         <td><OnOff value={r.isNumberRequired} /></td>
                         <td><OnOff value={r.isActive} /></td>
                         <td>{fmtDate(r.createdAt)}</td>
@@ -223,7 +225,7 @@ export default function IdentityDetails() {
 
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginTop: 8 }}>
               <button className="btn" disabled={page <= 1 || loading} onClick={() => setPage(p => Math.max(1, p - 1))}>
-                ‚Äπ Prev
+                ã Prev
               </button>
               <span className="small" style={{ alignSelf: "center", color: "var(--muted)" }}>Page {page}</span>
               <button
@@ -231,7 +233,7 @@ export default function IdentityDetails() {
                 disabled={loading || (!total ? dataToRender.length < limit : page * limit >= total)}
                 onClick={() => setPage(p => p + 1)}
               >
-                Next ‚Ä∫
+                Next õ
               </button>
             </div>
           </div>
@@ -276,27 +278,21 @@ function IdentityFormModal({ initial, onClose, onSaved, currentPropertyCode, pro
   const [propCode, setPropCode] = useState(
     (initial?.propertyCode || currentPropertyCode || "").toUpperCase()
   );
-  const [code, setCode] = useState(initial?.code || "");
   const [name, setName] = useState(initial?.name || "");
-  const [description, setDescription] = useState(initial?.description || "");
-  const [isNumberRequired, setIsNumberRequired] = useState(initial?.isNumberRequired ?? true);
-  const [isActive, setIsActive] = useState(initial?.isActive ?? true);
+
+  // Get the ID for display (read-only)
+  const displayId = initial?._id || initial?.id || "(Auto-generated on save)";
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setErr(""); setOk("");
 
     if (!propCode) return setErr("Property is required");
-    if (!code.trim()) return setErr("Code is required");
     if (!name.trim()) return setErr("Name is required");
 
     const payload = {
       propertyCode: propCode.toUpperCase(),
-      code: code.trim().toUpperCase(),
       name: name.trim(),
-      description,
-      isNumberRequired,
-      isActive,
     };
 
     setSaving(true);
@@ -328,53 +324,38 @@ function IdentityFormModal({ initial, onClose, onSaved, currentPropertyCode, pro
 
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
         <Row>
+          <Field label="ID">
+            <input 
+              className="input" 
+              value={displayId} 
+              disabled 
+              style={{ backgroundColor: "#f3f4f6", cursor: "not-allowed" }}
+              title="ID is auto-generated by the system"
+            />
+          </Field>
           <Field label="Property" required>
             <select
               className="res-select"
               value={propCode}
               onChange={(e) => setPropCode((e.target.value || "").toUpperCase())}
             >
-              <option value="">Select property‚Ä¶</option>
+              <option value="">Select propertyÖ</option>
               {properties.map(p => (
                 <option key={p.code} value={(p.code || "").toUpperCase()}>
-                  {(p.code || "").toUpperCase()} ‚Äî {p.name}
+                  {(p.code || "").toUpperCase()} ó {p.name}
                 </option>
               ))}
             </select>
-          </Field>
-          <Field label="Code" required>
-            <input className="input" value={code} onChange={e => setCode(e.target.value)} />
           </Field>
           <Field label="Name" required>
             <input className="input" value={name} onChange={e => setName(e.target.value)} />
           </Field>
         </Row>
 
-        <Row>
-          <Field label="Number Required">
-            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input type="checkbox" checked={isNumberRequired} onChange={e => setIsNumberRequired(e.target.checked)} />
-              <span>{isNumberRequired ? "Yes" : "No"}</span>
-            </label>
-          </Field>
-          <Field label="Active">
-            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} />
-              <span>{isActive ? "Yes" : "No"}</span>
-            </label>
-          </Field>
-        </Row>
-
-        <Row>
-          <Field label="Description">
-            <textarea className="input" rows={2} value={description} onChange={e => setDescription(e.target.value)} />
-          </Field>
-        </Row>
-
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <button type="button" className="btn" onClick={onClose}>Cancel</button>
           <button type="submit" className="btn" disabled={saving}>
-            {saving ? "Saving‚Ä¶" : (isEdit ? "Update" : "Create")}
+            {saving ? "SavingÖ" : (isEdit ? "Update" : "Create")}
           </button>
         </div>
       </form>
@@ -408,7 +389,7 @@ function Modal({ title, onClose, children }) {
       <div style={modalStyle}>
         <div style={headerStyle}>
           <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800 }}>{title}</h3>
-          <button onClick={onClose} aria-label="Close" style={xStyle}>√ó</button>
+          <button onClick={onClose} aria-label="Close" style={xStyle}>◊</button>
         </div>
         <div style={{ padding: 16 }}>{children}</div>
       </div>
@@ -423,7 +404,7 @@ function ConfirmModal({ title, message, confirmText = "OK", onConfirm, onClose }
       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
         <button className="btn" type="button" onClick={onClose}>Cancel</button>
         <button className="btn" type="button" disabled={busy} onClick={async () => { setBusy(true); try { await onConfirm?.(); onClose(); } finally { setBusy(false); } }}>
-          {busy ? "Working‚Ä¶" : confirmText}
+          {busy ? "WorkingÖ" : confirmText}
         </button>
       </div>
     </Modal>
@@ -447,4 +428,4 @@ const backdropStyle = { position: "fixed", inset: 0, background: "rgba(0,0,0,.45
 const modalStyle = { width: "min(900px, calc(100% - 24px))", background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,.22)", overflow: "hidden" };
 const headerStyle = { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid #e5e7eb", background: "#fff" };
 const xStyle = { border: "1px solid #e5e7eb", background: "#fff", color: "#111827", borderRadius: 10, width: 36, height: 36, cursor: "pointer" };
-function fmtDate(d) { if (!d) return "‚Äî"; const dt = new Date(d); return Number.isNaN(dt.getTime()) ? "‚Äî" : dt.toLocaleDateString(); }
+function fmtDate(d) { if (!d) return "ó"; const dt = new Date(d); return Number.isNaN(dt.getTime()) ? "ó" : dt.toLocaleDateString(); }

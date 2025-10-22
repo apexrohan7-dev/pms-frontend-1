@@ -50,7 +50,7 @@ export default function VersionPage() {
     const term = q.trim().toLowerCase();
     if (!term) return rows;
     return rows.filter(r =>
-      [r.code, r.name, r.description].filter(Boolean).some(v => String(v).toLowerCase().includes(term))
+      [r.deliveryAppVersion, r.qrVersion, r.tibooVersion, r.versionName].filter(Boolean).some(v => String(v).toLowerCase().includes(term))
     );
   }, [rows, q]);
   const dataToRender = rows?.length && total > rows.length ? rows : filtered;
@@ -85,7 +85,7 @@ export default function VersionPage() {
           <div style={{ display: "flex", gap: 8 }}>
             <input
               className="res-select"
-              placeholder="Search (code / name / description)"
+              placeholder="Search (version name / delivery app version)"
               value={q}
               onChange={(e) => { setQ(e.target.value); setPage(1); }}
               style={{ minWidth: 320 }}
@@ -106,7 +106,7 @@ export default function VersionPage() {
           <div className="panel-h">
             <span>Version List</span>
             <span className="small" style={{ color: "var(--muted)" }}>
-              {loading ? "Loading‚Ä¶" : `Total: ${total || dataToRender.length}`}
+              {loading ? "LoadingÖ" : `Total: ${total || dataToRender.length}`}
             </span>
           </div>
 
@@ -118,17 +118,20 @@ export default function VersionPage() {
                 <thead>
                   <tr>
                     <th style={{ width: 90 }}>Action</th>
-                    <th>Code</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Active</th>
+                    <th>Delivery App Version</th>
+                    <th>QR Version</th>
+                    <th>Tiboo Version</th>
+                    <th>Version Name</th>
+                    <th>Update Status</th>
+                    <th>Forces Update</th>
+                    <th>Message</th>
                     <th>Created</th>
                     <th>Updated</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(!dataToRender || dataToRender.length === 0) && !loading && (
-                    <tr className="no-rows"><td colSpan={7}>No versions found</td></tr>
+                    <tr className="no-rows"><td colSpan={10}>No versions found</td></tr>
                   )}
 
                   {dataToRender?.map(r => {
@@ -136,13 +139,16 @@ export default function VersionPage() {
                     return (
                       <tr key={id}>
                         <td>
-                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>‚úèÔ∏è</button>
-                          <button className="btn" style={btnSm} onClick={() => askDelete(r)}>üóëÔ∏è</button>
+                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>??</button>
+                          <button className="btn" style={btnSm} onClick={() => askDelete(r)}>???</button>
                         </td>
-                        <td>{r.code}</td>
-                        <td>{r.name}</td>
-                        <td title={r.description || ""}>{r.description || "‚Äî"}</td>
-                        <td><OnOff value={r.isActive} /></td>
+                        <td>{r.deliveryAppVersion || "ó"}</td>
+                        <td>{r.qrVersion || "ó"}</td>
+                        <td>{r.tibooVersion || "ó"}</td>
+                        <td>{r.versionName || "ó"}</td>
+                        <td>{r.updateStatus || "ó"}</td>
+                        <td><YesNo value={r.forcesUpdate} /></td>
+                        <td title={r.message || ""}>{r.message || "ó"}</td>
                         <td>{fmtDate(r.createdAt)}</td>
                         <td>{fmtDate(r.updatedAt)}</td>
                       </tr>
@@ -155,7 +161,7 @@ export default function VersionPage() {
             {/* Pagination */}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginTop: 8 }}>
               <button className="btn" disabled={page <= 1 || loading} onClick={() => setPage(p => Math.max(1, p - 1))}>
-                ‚Äπ Prev
+                ã Prev
               </button>
               <span className="small" style={{ alignSelf: "center", color: "var(--muted)" }}>Page {page}</span>
               <button
@@ -163,7 +169,7 @@ export default function VersionPage() {
                 disabled={loading || (!total ? dataToRender.length < limit : page * limit >= total)}
                 onClick={() => setPage(p => p + 1)}
               >
-                Next ‚Ä∫
+                Next õ
               </button>
             </div>
           </div>
@@ -181,7 +187,7 @@ export default function VersionPage() {
       {showDelete && (
         <ConfirmModal
           title="Delete Version?"
-          message={`Delete "${toDelete?.name}" (${toDelete?.code})? This cannot be undone.`}
+          message={`Delete "${toDelete?.versionName}" (${toDelete?.deliveryAppVersion})? This cannot be undone.`}
           confirmText="Delete"
           onClose={() => { setShowDelete(false); setToDelete(null); }}
           onConfirm={async () => {
@@ -202,23 +208,31 @@ function VersionFormModal({ initial, onClose, onSaved }) {
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
 
-  const [code, setCode] = useState(initial?.code || "");
-  const [name, setName] = useState(initial?.name || "");
-  const [description, setDescription] = useState(initial?.description || "");
-  const [isActive, setIsActive] = useState(initial?.isActive ?? true);
+  const [deliveryAppVersion, setDeliveryAppVersion] = useState(initial?.deliveryAppVersion || "");
+  const [qrVersion, setQrVersion] = useState(initial?.qrVersion || "");
+  const [tibooVersion, setTibooVersion] = useState(initial?.tibooVersion || "");
+  const [versionName, setVersionName] = useState(initial?.versionName || "");
+  const [updateStatus, setUpdateStatus] = useState(initial?.updateStatus || "Normal");
+  const [forcesUpdate, setForcesUpdate] = useState(initial?.forcesUpdate || "No");
+  const [message, setMessage] = useState(initial?.message || "");
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setErr(""); setOk("");
 
-    if (!code.trim()) return setErr("Code is required");
-    if (!name.trim()) return setErr("Name is required");
+    if (!deliveryAppVersion.trim()) return setErr("Delivery App Version is required");
+    if (!qrVersion.trim()) return setErr("QR Version is required");
+    if (!tibooVersion.trim()) return setErr("Tiboo Version is required");
+    if (!versionName.trim()) return setErr("Version Name is required");
 
     const payload = {
-      code: code.trim().toUpperCase(),
-      name: name.trim(),
-      description: description.trim(),
-      isActive: !!isActive,
+      deliveryAppVersion: deliveryAppVersion.trim(),
+      qrVersion: qrVersion.trim(),
+      tibooVersion: tibooVersion.trim(),
+      versionName: versionName.trim(),
+      updateStatus: updateStatus,
+      forcesUpdate: forcesUpdate,
+      message: message.trim(),
     };
 
     setSaving(true);
@@ -239,37 +253,64 @@ function VersionFormModal({ initial, onClose, onSaved }) {
     }
   };
 
+  const handleReset = () => {
+    setDeliveryAppVersion("");
+    setQrVersion("");
+    setTibooVersion("");
+    setVersionName("");
+    setUpdateStatus("Normal");
+    setForcesUpdate("No");
+    setMessage("");
+    setErr("");
+    setOk("");
+  };
+
   return (
-    <Modal title={isEdit ? "Edit Version" : "Create Version"} onClose={onClose}>
+    <Modal title={isEdit ? "Edit Version" : "Add Version"} onClose={onClose}>
       {err && <Banner type="err">{err}</Banner>}
       {ok && <Banner type="ok">{ok}</Banner>}
 
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
         <Row>
-          <Field label="Code" required>
-            <input className="input" value={code} onChange={e => setCode(e.target.value)} />
+          <Field label="DeliveryAppVersion" required>
+            <input className="input" value={deliveryAppVersion} onChange={e => setDeliveryAppVersion(e.target.value)} />
           </Field>
-          <Field label="Name" required>
-            <input className="input" value={name} onChange={e => setName(e.target.value)} />
+          <Field label="QrVersion" required>
+            <input className="input" value={qrVersion} onChange={e => setQrVersion(e.target.value)} />
           </Field>
-          <Field label="Active">
-            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} />
-              <span>{isActive ? "Yes" : "No"}</span>
-            </label>
+          <Field label="TibooVersion" required>
+            <input className="input" value={tibooVersion} onChange={e => setTibooVersion(e.target.value)} />
+          </Field>
+          <Field label="VersionName" required>
+            <input className="input" value={versionName} onChange={e => setVersionName(e.target.value)} />
           </Field>
         </Row>
 
         <Row>
-          <Field label="Description">
-            <textarea className="input" rows={2} value={description} onChange={e => setDescription(e.target.value)} />
+          <Field label="UpdateStatus" required>
+            <select className="input" value={updateStatus} onChange={e => setUpdateStatus(e.target.value)}>
+              <option value="Normal">Normal</option>
+              <option value="Critical">Critical</option>
+              <option value="Optional">Optional</option>
+            </select>
+          </Field>
+          <Field label="ForcesUpdate" required>
+            <select className="input" value={forcesUpdate} onChange={e => setForcesUpdate(e.target.value)}>
+              <option value="No">No</option>
+              <option value="Yes">Yes</option>
+            </select>
+          </Field>
+          <Field label="Message">
+            <input className="input" value={message} onChange={e => setMessage(e.target.value)} />
           </Field>
         </Row>
 
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button type="button" className="btn" onClick={onClose}>Cancel</button>
+          <button type="button" className="btn" style={{ background: "#dc2626", color: "#fff" }} onClick={handleReset}>
+            RESET
+          </button>
           <button type="submit" className="btn" disabled={saving}>
-            {saving ? "Saving‚Ä¶" : (isEdit ? "Update" : "Create")}
+            {saving ? "SavingÖ" : (isEdit ? "Update" : "Create")}
           </button>
         </div>
       </form>
@@ -279,7 +320,7 @@ function VersionFormModal({ initial, onClose, onSaved }) {
 
 /* ---------- Tiny UI helpers ---------- */
 function Row({ children }) {
-  return <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(3, minmax(160px, 1fr))" }}>{children}</div>;
+  return <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(4, minmax(160px, 1fr))" }}>{children}</div>;
 }
 function Field({ label, required, children }) {
   return (
@@ -303,7 +344,7 @@ function Modal({ title, onClose, children }) {
       <div style={modalStyle}>
         <div style={headerStyle}>
           <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800 }}>{title}</h3>
-          <button onClick={onClose} aria-label="Close" style={xStyle}>√ó</button>
+          <button onClick={onClose} aria-label="Close" style={xStyle}>◊</button>
         </div>
         <div style={{ padding: 16 }}>{children}</div>
       </div>
@@ -318,22 +359,22 @@ function ConfirmModal({ title, message, confirmText = "OK", onConfirm, onClose }
       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
         <button className="btn" type="button" onClick={onClose}>Cancel</button>
         <button className="btn" type="button" disabled={busy} onClick={async () => { setBusy(true); try { await onConfirm?.(); onClose(); } finally { setBusy(false); } }}>
-          {busy ? "Working‚Ä¶" : confirmText}
+          {busy ? "WorkingÖ" : confirmText}
         </button>
       </div>
     </Modal>
   );
 }
-function OnOff({ value }) {
-  const on = !!value;
+function YesNo({ value }) {
+  const isYes = value === "Yes" || value === true;
   return (
     <span style={{
       display: "inline-block", padding: ".15rem .5rem",
-      borderRadius: 999, background: on ? "#ecfdf5" : "#f3f4f6",
-      border: `1px solid ${on ? "#a7f3d0" : "#e5e7eb"}`,
-      color: on ? "#15803d" : "#334155", fontSize: ".75rem", fontWeight: 700
+      borderRadius: 999, background: isYes ? "#ecfdf5" : "#f3f4f6",
+      border: `1px solid ${isYes ? "#a7f3d0" : "#e5e7eb"}`,
+      color: isYes ? "#15803d" : "#334155", fontSize: ".75rem", fontWeight: 700
     }}>
-      {on ? "Active" : "Inactive"}
+      {isYes ? "Yes" : "No"}
     </span>
   );
 }
@@ -341,5 +382,5 @@ const btnSm = { padding: ".3rem .5rem", marginRight: 4, fontWeight: 700 };
 const backdropStyle = { position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", display: "grid", placeItems: "center", zIndex: 1000 };
 const modalStyle = { width: "min(900px, calc(100% - 24px))", background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,.22)", overflow: "hidden" };
 const headerStyle = { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid #e5e7eb", background: "#fff" };
-const xStyle = { border: "1px solid #e5e7eb", background: "#fff", color: "#111827", borderRadius: 10, width: 36, height: 36, cursor: "pointer" };
-function fmtDate(d) { if (!d) return "‚Äî"; const dt = new Date(d); return Number.isNaN(dt) ? "‚Äî" : dt.toLocaleDateString(); }
+const xStyle = { border: "1px solid #e5e5e5", background: "#fff", color: "#111827", borderRadius: 10, width: 36, height: 36, cursor: "pointer" };
+function fmtDate(d) { if (!d) return "ó"; const dt = new Date(d); return Number.isNaN(dt) ? "ó" : dt.toLocaleDateString(); }

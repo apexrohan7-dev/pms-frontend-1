@@ -5,11 +5,71 @@ import "../../../components/sidebar/Sidebar.css";
 import "../../../assets/css/commanPage.css";
 
 const PAGE_SIZE = 10;
-const getPropCode = () => (localStorage.getItem("currentPropertyCode") || "").toUpperCase();
+
+// Hardcoded countries list
+const COUNTRIES = [
+  { code: "AF", name: "Afghanistan" },
+  { code: "AL", name: "Albania" },
+  { code: "DZ", name: "Algeria" },
+  { code: "AR", name: "Argentina" },
+  { code: "AU", name: "Australia" },
+  { code: "AT", name: "Austria" },
+  { code: "BD", name: "Bangladesh" },
+  { code: "BE", name: "Belgium" },
+  { code: "BR", name: "Brazil" },
+  { code: "CA", name: "Canada" },
+  { code: "CN", name: "China" },
+  { code: "CO", name: "Colombia" },
+  { code: "CZ", name: "Czech Republic" },
+  { code: "DK", name: "Denmark" },
+  { code: "EG", name: "Egypt" },
+  { code: "FI", name: "Finland" },
+  { code: "FR", name: "France" },
+  { code: "DE", name: "Germany" },
+  { code: "GR", name: "Greece" },
+  { code: "HK", name: "Hong Kong" },
+  { code: "HU", name: "Hungary" },
+  { code: "IN", name: "India" },
+  { code: "ID", name: "Indonesia" },
+  { code: "IE", name: "Ireland" },
+  { code: "IL", name: "Israel" },
+  { code: "IT", name: "Italy" },
+  { code: "JP", name: "Japan" },
+  { code: "KE", name: "Kenya" },
+  { code: "MY", name: "Malaysia" },
+  { code: "MX", name: "Mexico" },
+  { code: "NL", name: "Netherlands" },
+  { code: "NZ", name: "New Zealand" },
+  { code: "NG", name: "Nigeria" },
+  { code: "NO", name: "Norway" },
+  { code: "PK", name: "Pakistan" },
+  { code: "PH", name: "Philippines" },
+  { code: "PL", name: "Poland" },
+  { code: "PT", name: "Portugal" },
+  { code: "RO", name: "Romania" },
+  { code: "RU", name: "Russia" },
+  { code: "SA", name: "Saudi Arabia" },
+  { code: "SG", name: "Singapore" },
+  { code: "ZA", name: "South Africa" },
+  { code: "KR", name: "South Korea" },
+  { code: "ES", name: "Spain" },
+  { code: "LK", name: "Sri Lanka" },
+  { code: "SE", name: "Sweden" },
+  { code: "CH", name: "Switzerland" },
+  { code: "TW", name: "Taiwan" },
+  { code: "TH", name: "Thailand" },
+  { code: "TR", name: "Turkey" },
+  { code: "AE", name: "United Arab Emirates" },
+  { code: "GB", name: "United Kingdom" },
+  { code: "US", name: "United States" },
+  { code: "VN", name: "Vietnam" },
+];
 
 export default function CityMaster() {
   const [rows, setRows] = useState([]);
+  const [countriesList] = useState(COUNTRIES);
   const [q, setQ] = useState("");
+  const [countryFilter, setCountryFilter] = useState("");
   const [stateFilter, setStateFilter] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(PAGE_SIZE);
@@ -25,12 +85,14 @@ export default function CityMaster() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await apiFetch(`/api/states?limit=500&isActive=true`, { auth: true });
+        const params = new URLSearchParams({ limit: 500 });
+        if (countryFilter) params.set("countryCode", countryFilter);
+        const res = await apiFetch(`/api/states?${params.toString()}`, { auth: true });
         const data = res?.data || res || [];
         setStates(Array.isArray(data) ? data : []);
       } catch { /* ignore */ }
     })();
-  }, []);
+  }, [countryFilter]);
 
   // load cities
   useEffect(() => {
@@ -38,10 +100,8 @@ export default function CityMaster() {
     (async () => {
       setLoading(true); setErr("");
       try {
-        const params = new URLSearchParams({
-          q, page, limit,
-          propertyCode: getPropCode(),
-        });
+        const params = new URLSearchParams({ q, page, limit });
+        if (countryFilter) params.set("countryCode", countryFilter);
         if (stateFilter) params.set("stateCode", stateFilter);
 
         const res = await apiFetch(`/api/cities?${params.toString()}`, { auth: true });
@@ -55,14 +115,14 @@ export default function CityMaster() {
       }
     })();
     return () => { ignore = true; };
-  }, [q, page, limit, stateFilter]);
+  }, [q, page, limit, countryFilter, stateFilter]);
 
-  // client search fallback if server didn't paginate
+  // client search fallback
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return rows;
     return rows.filter(r =>
-      [r.code, r.name, r.stateCode, r.description]
+      [r.countryCode, r.stateCode, r.city]
         .filter(Boolean)
         .some(v => String(v).toLowerCase().includes(term))
     );
@@ -87,6 +147,18 @@ export default function CityMaster() {
     setTotal(t => Math.max(0, t - 1));
   };
 
+  // Helper to get country name from code
+  const getCountryName = (code) => {
+    const country = countriesList.find(c => c.code === code);
+    return country ? country.name : code || "ó";
+  };
+
+  // Helper to get state name from code
+  const getStateName = (code) => {
+    const state = states.find(s => s.stateCode === code);
+    return state ? state.state : code || "ó";
+  };
+
   return (
     <div className="page" style={{ display: "grid", gridTemplateColumns: "auto 1fr" }}>
       <BackofficeSidebar />
@@ -94,23 +166,38 @@ export default function CityMaster() {
       <div className="res-wrap">
         <div className="res-topbar">
           <h2 style={{ margin: 0 }}>City Master</h2>
-          <div style={{ display: "flex", gap: 8 }}>
-            <input
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <select
               className="res-select"
-              placeholder="Search (code / name / state / description)"
-              value={q}
-              onChange={(e) => { setQ(e.target.value); setPage(1); }}
-              style={{ minWidth: 320 }}
-            />
+              value={countryFilter}
+              onChange={(e) => { setCountryFilter(e.target.value); setStateFilter(""); setPage(1); }}
+              title="Filter by Country"
+            >
+              <option value="">All Countries</option>
+              {countriesList.map(c => (
+                <option key={c.code} value={c.code}>{c.name}</option>
+              ))}
+            </select>
+
             <select
               className="res-select"
               value={stateFilter}
               onChange={(e) => { setStateFilter(e.target.value); setPage(1); }}
               title="Filter by State"
+              disabled={!countryFilter}
             >
               <option value="">All States</option>
-              {states.map(s => <option key={s._id || s.code} value={s.code}>{s.code} ‚Äî {s.name}</option>)}
+              {states.map(s => <option key={s._id || s.stateCode} value={s.stateCode}>{s.state}</option>)}
             </select>
+
+            <input
+              className="res-select"
+              placeholder="Search (country / state / city)"
+              value={q}
+              onChange={(e) => { setQ(e.target.value); setPage(1); }}
+              style={{ minWidth: 280 }}
+            />
+            
             <select
               className="res-select"
               value={limit}
@@ -126,7 +213,7 @@ export default function CityMaster() {
           <div className="panel-h">
             <span>Cities</span>
             <span className="small" style={{ color: "var(--muted)" }}>
-              {loading ? "Loading‚Ä¶" : `Total: ${total || dataToRender.length}`}
+              {loading ? "LoadingÖ" : `Total: ${total || dataToRender.length}`}
             </span>
           </div>
           <div className="panel-b">
@@ -137,18 +224,16 @@ export default function CityMaster() {
                 <thead>
                   <tr>
                     <th style={{ width: 90 }}>Action</th>
-                    <th>Code</th>
-                    <th>Name</th>
+                    <th>Country</th>
                     <th>State</th>
-                    <th>Description</th>
-                    <th>Active</th>
+                    <th>City</th>
                     <th>Created</th>
                     <th>Updated</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(!dataToRender || dataToRender.length === 0) && !loading && (
-                    <tr className="no-rows"><td colSpan={8}>No cities found</td></tr>
+                    <tr className="no-rows"><td colSpan={6}>No cities found</td></tr>
                   )}
 
                   {dataToRender?.map(r => {
@@ -156,20 +241,18 @@ export default function CityMaster() {
                     return (
                       <tr key={id}>
                         <td>
-                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>‚úèÔ∏è</button>
+                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>??</button>
                           <button
                             className="btn" style={btnSm}
                             onClick={async () => {
                               await apiFetch(`/api/cities/${id}`, { method: "DELETE", auth: true });
                               afterDelete(id);
                             }}
-                          >üóëÔ∏è</button>
+                          >???</button>
                         </td>
-                        <td>{r.code}</td>
-                        <td>{r.name}</td>
-                        <td>{r.stateCode}</td>
-                        <td title={r.description || ""}>{r.description || "‚Äî"}</td>
-                        <td><OnOff value={r.isActive} /></td>
+                        <td>{getCountryName(r.countryCode)}</td>
+                        <td>{getStateName(r.stateCode)}</td>
+                        <td>{r.city || "ó"}</td>
                         <td>{fmtDate(r.createdAt)}</td>
                         <td>{fmtDate(r.updatedAt)}</td>
                       </tr>
@@ -182,13 +265,13 @@ export default function CityMaster() {
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginTop: 8 }}>
               <button className="btn" disabled={page <= 1 || loading}
                 onClick={() => setPage(p => Math.max(1, p - 1))}>
-                ‚Äπ Prev
+                ã Prev
               </button>
               <span className="small" style={{ alignSelf: "center", color: "var(--muted)" }}>Page {page}</span>
               <button className="btn"
                 disabled={loading || (!total ? dataToRender.length < limit : page * limit >= total)}
                 onClick={() => setPage(p => p + 1)}>
-                Next ‚Ä∫
+                Next õ
               </button>
             </div>
           </div>
@@ -198,7 +281,7 @@ export default function CityMaster() {
       {showForm && (
         <CityFormModal
           initial={editing}
-          states={states}
+          countriesList={countriesList}
           onClose={() => { setShowForm(false); setEditing(null); }}
           onSaved={afterSave}
         />
@@ -208,32 +291,46 @@ export default function CityMaster() {
 }
 
 /* ---------- Form Modal ---------- */
-function CityFormModal({ initial, onClose, onSaved, states }) {
+function CityFormModal({ initial, onClose, onSaved, countriesList }) {
   const isEdit = !!initial;
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
 
-  const [code, setCode] = useState(initial?.code || "");
-  const [name, setName] = useState(initial?.name || "");
+  const [countryCode, setCountryCode] = useState(initial?.countryCode || "");
   const [stateCode, setStateCode] = useState(initial?.stateCode || "");
-  const [description, setDescription] = useState(initial?.description || "");
-  const [isActive, setIsActive] = useState(initial?.isActive ?? true);
+  const [city, setCity] = useState(initial?.city || "");
+  const [states, setStates] = useState([]);
+
+  // Load states when country changes
+  useEffect(() => {
+    if (!countryCode) {
+      setStates([]);
+      setStateCode("");
+      return;
+    }
+    (async () => {
+      try {
+        const res = await apiFetch(`/api/states?countryCode=${countryCode}&limit=500`, { auth: true });
+        const data = res?.data || res || [];
+        setStates(Array.isArray(data) ? data : []);
+      } catch {
+        setStates([]);
+      }
+    })();
+  }, [countryCode]);
 
   const onSubmit = async (e) => {
     e.preventDefault(); setErr(""); setOk("");
 
-    if (!code.trim()) return setErr("Code is required");
-    if (!name.trim()) return setErr("Name is required");
+    if (!countryCode.trim()) return setErr("Country is required");
     if (!stateCode.trim()) return setErr("State is required");
+    if (!city.trim()) return setErr("City is required");
 
     const payload = {
-      code: code.trim().toUpperCase(),
-      name: name.trim(),
+      countryCode: countryCode.trim().toUpperCase(),
       stateCode: stateCode.trim().toUpperCase(),
-      description,
-      isActive,
-      propertyCode: getPropCode(),
+      city: city.trim(),
     };
 
     setSaving(true);
@@ -254,45 +351,65 @@ function CityFormModal({ initial, onClose, onSaved, states }) {
     }
   };
 
+  const handleReset = () => {
+    setCountryCode("");
+    setStateCode("");
+    setCity("");
+    setErr("");
+    setOk("");
+  };
+
   return (
-    <Modal title={isEdit ? "Edit City" : "Create City"} onClose={onClose}>
+    <Modal title={isEdit ? "Edit City" : "Add City"} onClose={onClose}>
       {err && <Banner type="err">{err}</Banner>}
       {ok && <Banner type="ok">{ok}</Banner>}
 
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
         <Row>
-          <Field label="Code" required>
-            <input className="input" value={code} onChange={e => setCode(e.target.value)} />
-          </Field>
-          <Field label="Name" required>
-            <input className="input" value={name} onChange={e => setName(e.target.value)} />
+          <Field label="Country" required>
+            <select
+              className="res-select"
+              value={countryCode}
+              onChange={(e) => setCountryCode(e.target.value)}
+            >
+              <option value="">--Select--</option>
+              {countriesList.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+            </select>
           </Field>
           <Field label="State" required>
-            <select className="res-select" value={stateCode} onChange={e => setStateCode(e.target.value)}>
-              <option value="">Select State</option>
+            <select
+              className="res-select"
+              value={stateCode}
+              onChange={(e) => setStateCode(e.target.value)}
+              disabled={!countryCode}
+            >
+              <option value="">--Select--</option>
               {states.map(s => (
-                <option key={s._id || s.code} value={s.code}>{s.code} ‚Äî {s.name}</option>
+                <option key={s._id || s.stateCode} value={s.stateCode}>{s.state}</option>
               ))}
             </select>
           </Field>
-        </Row>
-
-        <Row>
-          <Field label="Description">
-            <textarea className="input" rows={2} value={description} onChange={e => setDescription(e.target.value)} />
-          </Field>
-          <Field label="Active">
-            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} />
-              <span>{isActive ? "Yes" : "No"}</span>
-            </label>
+          <Field label="City" required>
+            <input className="input" value={city} onChange={e => setCity(e.target.value)} />
           </Field>
         </Row>
 
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button type="button" className="btn" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn" disabled={saving}>
-            {saving ? "Saving‚Ä¶" : (isEdit ? "Update" : "Create")}
+          <button 
+            type="button" 
+            className="btn" 
+            style={{ background: "#dc2626", color: "#fff" }} 
+            onClick={handleReset}
+          >
+            RESET
+          </button>
+          <button 
+            type="submit" 
+            className="btn" 
+            style={{ background: "#7c3aed", color: "#fff" }}
+            disabled={saving}
+          >
+            {saving ? "SavingÖ" : "SAVE"}
           </button>
         </div>
       </form>
@@ -322,29 +439,16 @@ function Modal({ title, onClose, children }) {
       <div style={modalStyle}>
         <div style={headerStyle}>
           <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800 }}>{title}</h3>
-          <button onClick={onClose} aria-label="Close" style={xStyle}>√ó</button>
+          <button onClick={onClose} aria-label="Close" style={xStyle}>◊</button>
         </div>
         <div style={{ padding: 16 }}>{children}</div>
       </div>
     </div>
   );
 }
-function OnOff({ value }) {
-  const on = !!value;
-  return (
-    <span style={{
-      display: "inline-block", padding: ".15rem .5rem",
-      borderRadius: 999, background: on ? "#ecfdf5" : "#f3f4f6",
-      border: `1px solid ${on ? "#a7f3d0" : "#e5e7eb"}`,
-      color: on ? "#15803d" : "#334155", fontSize: ".75rem", fontWeight: 700
-    }}>
-      {on ? "Active" : "Inactive"}
-    </span>
-  );
-}
 const btnSm = { padding: ".3rem .5rem", marginRight: 4, fontWeight: 700 };
 const backdropStyle = { position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", display: "grid", placeItems: "center", zIndex: 1000 };
 const modalStyle = { width: "min(900px, calc(100% - 24px))", background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,.22)", overflow: "hidden" };
 const headerStyle = { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid #e5e7eb", background: "#fff" };
-const xStyle = { border: "1px solid #e5e7eb", background: "#fff", color: "#111827", borderRadius: 10, width: 36, height: 36, cursor: "pointer" };
-function fmtDate(d) { if (!d) return "‚Äî"; const dt = new Date(d); return Number.isNaN(dt) ? "‚Äî" : dt.toLocaleDateString(); }
+const xStyle = { border: "1px solid #e5e5e5", background: "#fff", color: "#111827", borderRadius: 10, width: 36, height: 36, cursor: "pointer" };
+function fmtDate(d) { if (!d) return "ó"; const dt = new Date(d); return Number.isNaN(dt) ? "ó" : dt.toLocaleDateString(); }

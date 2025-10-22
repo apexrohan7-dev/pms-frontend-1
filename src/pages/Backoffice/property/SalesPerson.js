@@ -38,7 +38,7 @@ export default function SalesPerson() {
         }
       } catch (e) {
         if (!ignore) {
-          setErr(e?.message || "Failed to load sales persons.");
+          setErr(e?.message || "Failed to load employees.");
           setRows([]);
           setTotal(0);
         }
@@ -53,7 +53,7 @@ export default function SalesPerson() {
     const term = q.trim().toLowerCase();
     if (!term) return rows;
     return rows.filter(r =>
-      [r.name, r.email, r.phone]
+      [r.name, r.code, r.mobileNo, r.emailId]
         .filter(Boolean)
         .some(v => String(v).toLowerCase().includes(term))
     );
@@ -74,6 +74,7 @@ export default function SalesPerson() {
       const next = prev.slice(); next[idx] = saved; return next;
     });
   };
+  
   const afterDelete = (id) => {
     setShowDelete(false); setToDelete(null);
     setRows(prev => prev.filter(r => (r._id || r.id) !== id));
@@ -87,14 +88,14 @@ export default function SalesPerson() {
       <div className="res-wrap">
         {/* Topbar */}
         <div className="res-topbar">
-          <h2 style={{ margin: 0 }}>Sales Persons</h2>
+          <h2 style={{ margin: 0 }}>Employees</h2>
           <div style={{ display: "flex", gap: 8 }}>
             <input
               className="res-select"
-              placeholder="Search (name / email / phone)"
+              placeholder="Search (name / code / mobile / email)"
               value={q}
               onChange={(e) => { setQ(e.target.value); setPage(1); }}
-              style={{ minWidth: 260 }}
+              style={{ minWidth: 280 }}
             />
             <select
               className="res-select"
@@ -103,16 +104,16 @@ export default function SalesPerson() {
             >
               {[10, 20, 50, 100].map(n => <option key={n} value={n}>{n}/page</option>)}
             </select>
-            <button className="btn" onClick={openCreate}>+ Add</button>
+            <button className="btn" onClick={openCreate}>+ Add Employee</button>
           </div>
         </div>
 
         {/* Table */}
         <div className="panel">
           <div className="panel-h">
-            <span>Sales Persons</span>
+            <span>Employee List</span>
             <span className="small" style={{ color: "var(--muted)" }}>
-              {loading ? "Loading‚Ä¶" : `Total: ${total || dataToRender.length}`}
+              {loading ? "LoadingÖ" : `Total: ${total || dataToRender.length}`}
             </span>
           </div>
           <div className="panel-b">
@@ -122,17 +123,19 @@ export default function SalesPerson() {
               <table className="table">
                 <thead>
                   <tr>
-                    <th style={{ width: 90 }}>Action</th>
+                    <th style={{ width: 100 }}>Action</th>
                     <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Active</th>
+                    <th>Code</th>
+                    <th>Mobile No</th>
+                    <th>EmailId</th>
+                    <th>Type</th>
+                    <th>Commission</th>
                     <th>Created</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(!dataToRender || dataToRender.length === 0) && !loading && (
-                    <tr className="no-rows"><td colSpan={6}>No sales persons found</td></tr>
+                    <tr className="no-rows"><td colSpan={8}>No employees found</td></tr>
                   )}
 
                   {dataToRender?.map(r => {
@@ -140,13 +143,15 @@ export default function SalesPerson() {
                     return (
                       <tr key={id}>
                         <td>
-                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>‚úèÔ∏è</button>
-                          <button className="btn" style={btnSm} onClick={() => askDelete(r)}>üóëÔ∏è</button>
+                          <button className="btn" style={btnSm} onClick={() => openEdit(r)} title="Edit">??</button>
+                          <button className="btn" style={btnSm} onClick={() => askDelete(r)} title="Delete">???</button>
                         </td>
-                        <td>{r.name}</td>
-                        <td>{r.email}</td>
-                        <td>{r.phone}</td>
-                        <td><OnOff value={r.isActive} /></td>
+                        <td>{r.name || "ó"}</td>
+                        <td>{r.code || "ó"}</td>
+                        <td>{r.mobileNo || "ó"}</td>
+                        <td>{r.emailId || "ó"}</td>
+                        <td><TypeBadge value={r.type} /></td>
+                        <td>{formatCommission(r.commission, r.type)}</td>
                         <td>{fmtDate(r.createdAt)}</td>
                       </tr>
                     );
@@ -159,13 +164,15 @@ export default function SalesPerson() {
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginTop: 8 }}>
               <button className="btn" disabled={page <= 1 || loading}
                 onClick={() => setPage(p => Math.max(1, p - 1))}>
-                ‚Äπ Prev
+                ã Prev
               </button>
-              <span className="small" style={{ alignSelf: "center", color: "var(--muted)" }}>Page {page}</span>
+              <span className="small" style={{ alignSelf: "center", color: "var(--muted)" }}>
+                Page {page}
+              </span>
               <button className="btn"
                 disabled={loading || (!total ? dataToRender.length < limit : page * limit >= total)}
                 onClick={() => setPage(p => p + 1)}>
-                Next ‚Ä∫
+                Next õ
               </button>
             </div>
           </div>
@@ -182,8 +189,8 @@ export default function SalesPerson() {
 
       {showDelete && (
         <ConfirmModal
-          title="Delete Sales Person?"
-          message={`Delete "${toDelete?.name}"? This cannot be undone.`}
+          title="Delete Employee?"
+          message={`Are you sure you want to delete "${toDelete?.name}"? This action cannot be undone.`}
           confirmText="Delete"
           onClose={() => { setShowDelete(false); setToDelete(null); }}
           onConfirm={async () => {
@@ -201,49 +208,195 @@ export default function SalesPerson() {
 function SalesPersonForm({ initial, onClose, onSaved }) {
   const isEdit = !!initial;
   const [name, setName] = useState(initial?.name || "");
-  const [email, setEmail] = useState(initial?.email || "");
-  const [phone, setPhone] = useState(initial?.phone || "");
-  const [isActive, setIsActive] = useState(initial?.isActive ?? true);
+  const [code, setCode] = useState(initial?.code || "");
+  const [mobileNo, setMobileNo] = useState(initial?.mobileNo || "");
+  const [emailId, setEmailId] = useState(initial?.emailId || "");
+  const [type, setType] = useState(initial?.type || "%");
+  const [commission, setCommission] = useState(initial?.commission?.toString() || "0");
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!name.trim()) return setErr("Name is required");
-    setSaving(true); setErr("");
-    const payload = { name, email, phone, isActive };
+    
+    // Validation
+    if (!name.trim()) {
+      return setErr("Name is required");
+    }
+    
+    setSaving(true);
+    setErr("");
+    
+    const payload = { 
+      name: name.trim(), 
+      code: code.trim(), 
+      mobileNo: mobileNo.trim(), 
+      emailId: emailId.trim(), 
+      type, 
+      commission: parseFloat(commission) || 0 
+    };
+    
+    // DEBUG LOG
+    console.log("?? FRONTEND PAYLOAD:", JSON.stringify(payload, null, 2));
+    
     try {
       let saved;
       if (isEdit) {
         const id = initial._id || initial.id;
-        saved = await apiFetch(`/api/salespersons/${id}`, { method: "PATCH", auth: true, body: JSON.stringify(payload) });
+        saved = await apiFetch(`/api/salespersons/${id}`, { 
+          method: "PATCH", 
+          auth: true, 
+          body: JSON.stringify(payload) 
+        });
       } else {
-        saved = await apiFetch("/api/salespersons", { method: "POST", auth: true, body: JSON.stringify(payload) });
+        saved = await apiFetch("/api/salespersons", { 
+          method: "POST", 
+          auth: true, 
+          body: JSON.stringify(payload) 
+        });
       }
+      
+      // DEBUG LOG
+      console.log("?? FRONTEND RESPONSE:", JSON.stringify(saved, null, 2));
+      
       onSaved(saved);
     } catch (e2) {
-      setErr(e2?.message || "Failed to save.");
+      console.error("?? FRONTEND ERROR:", e2);
+      setErr(e2?.message || "Failed to save employee.");
     } finally {
       setSaving(false);
     }
   };
 
+  const handleReset = () => {
+    if (isEdit) {
+      // Reset to initial values when editing
+      setName(initial?.name || "");
+      setCode(initial?.code || "");
+      setMobileNo(initial?.mobileNo || "");
+      setEmailId(initial?.emailId || "");
+      setType(initial?.type || "%");
+      setCommission(initial?.commission?.toString() || "0");
+    } else {
+      // Clear all fields when creating new
+      setName("");
+      setCode("");
+      setMobileNo("");
+      setEmailId("");
+      setType("%");
+      setCommission("0");
+    }
+    setErr("");
+  };
+
   return (
-    <Modal title={isEdit ? "Edit Sales Person" : "Add Sales Person"} onClose={onClose}>
+    <Modal title={isEdit ? "Edit Employee" : "Add Employee"} onClose={onClose}>
       {err && <Banner type="err">{err}</Banner>}
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-        <Field label="Name" required><input className="input" value={name} onChange={e => setName(e.target.value)} /></Field>
-        <Field label="Email"><input className="input" value={email} onChange={e => setEmail(e.target.value)} /></Field>
-        <Field label="Phone"><input className="input" value={phone} onChange={e => setPhone(e.target.value)} /></Field>
-        <Field label="Active">
-          <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} />
-            <span>{isActive ? "Yes" : "No"}</span>
-          </label>
-        </Field>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-          <button type="button" className="btn" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn" disabled={saving}>{saving ? "Saving‚Ä¶" : (isEdit ? "Update" : "Create")}</button>
+      <form onSubmit={onSubmit}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+          {/* Row 1 */}
+          <Field label="Name" required>
+            <input 
+              className="input" 
+              value={name} 
+              onChange={e => setName(e.target.value)} 
+              placeholder="Enter employee name"
+              autoFocus
+            />
+          </Field>
+          
+          <Field label="Code">
+            <input 
+              className="input" 
+              value={code} 
+              onChange={e => setCode(e.target.value)} 
+              placeholder="Enter employee code"
+            />
+          </Field>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+          {/* Row 2 */}
+          <Field label="Mobile No">
+            <input 
+              className="input" 
+              type="tel"
+              value={mobileNo} 
+              onChange={e => setMobileNo(e.target.value)} 
+              placeholder="Enter mobile number"
+            />
+          </Field>
+          
+          <Field label="EmailId">
+            <input 
+              className="input" 
+              type="email"
+              value={emailId} 
+              onChange={e => setEmailId(e.target.value)} 
+              placeholder="Enter email address"
+            />
+          </Field>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+          {/* Row 3 */}
+          <Field label="Type">
+            <select 
+              className="input" 
+              value={type} 
+              onChange={e => setType(e.target.value)}
+              style={{ cursor: "pointer" }}
+            >
+              <option value="%">%</option>
+              <option value="Fixed">Fixed</option>
+              <option value="Percentage">Percentage</option>
+            </select>
+          </Field>
+          
+          <Field label="Commission">
+            <input 
+              className="input" 
+              type="number"
+              value={commission} 
+              onChange={e => setCommission(e.target.value)} 
+              placeholder="0"
+              step="0.01"
+              min="0"
+            />
+          </Field>
+        </div>
+        
+        <div style={{ display: "flex", justifyContent: "flex-start", gap: 8, paddingTop: 8, borderTop: "1px solid #e5e7eb" }}>
+          <button 
+            type="submit" 
+            className="btn" 
+            disabled={saving} 
+            style={{ 
+              background: "#667eea", 
+              color: "#fff", 
+              padding: "10px 24px",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px"
+            }}
+          >
+            {saving ? "SavingÖ" : "SAVE"}
+          </button>
+          <button 
+            type="button" 
+            className="btn" 
+            onClick={handleReset} 
+            style={{ 
+              background: "#dc2626", 
+              color: "#fff", 
+              padding: "10px 24px",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px"
+            }}
+          >
+            RESET
+          </button>
         </div>
       </form>
     </Modal>
@@ -253,64 +406,179 @@ function SalesPersonForm({ initial, onClose, onSaved }) {
 /* ---------- Small UI helpers ---------- */
 function Field({ label, required, children }) {
   return (
-    <label style={{ display: "grid", gap: 6 }}>
-      <span className="label" style={{ fontWeight: 700 }}>
-        {label}{required && <span style={{ color: "#b91c1c" }}>*</span>}
+    <label style={{ display: "grid", gap: 4 }}>
+      <span style={{ fontWeight: 600, fontSize: "14px", color: "#374151" }}>
+        {label}
+        {required && <span style={{ color: "#dc2626", marginLeft: 2 }}>*</span>}
       </span>
       {children}
     </label>
   );
 }
+
 function Banner({ type = "ok", children }) {
   const style = type === "err"
     ? { background: "#fef2f2", color: "#991b1b", border: "1px solid #fecaca" }
     : { background: "#dcfce7", color: "#166534", border: "1px solid #bbf7d0" };
-  return <div style={{ ...style, padding: "8px 10px", borderRadius: 10, fontWeight: 700, marginBottom: 10 }}>{children}</div>;
+  return (
+    <div style={{ 
+      ...style, 
+      padding: "10px 12px", 
+      borderRadius: 8, 
+      fontWeight: 600, 
+      marginBottom: 16,
+      fontSize: "14px"
+    }}>
+      {children}
+    </div>
+  );
 }
+
 function Modal({ title, onClose, children }) {
   return (
     <div style={backdropStyle}>
       <div style={modalStyle}>
         <div style={headerStyle}>
-          <h3 style={{ margin: 0 }}>{title}</h3>
-          <button onClick={onClose} style={xStyle}>√ó</button>
+          <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 600 }}>{title}</h3>
+          <button onClick={onClose} style={xStyle} aria-label="Close">◊</button>
         </div>
-        <div style={{ padding: 16 }}>{children}</div>
+        <div style={{ padding: 20 }}>{children}</div>
       </div>
     </div>
   );
 }
+
 function ConfirmModal({ title, message, confirmText = "OK", onConfirm, onClose }) {
   const [busy, setBusy] = useState(false);
   return (
     <Modal title={title} onClose={onClose}>
-      <p>{message}</p>
+      <p style={{ marginBottom: 20, color: "#4b5563" }}>{message}</p>
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-        <button className="btn" onClick={onClose}>Cancel</button>
-        <button className="btn" disabled={busy} onClick={async () => { setBusy(true); try { await onConfirm?.(); } finally { setBusy(false); } }}>
-          {busy ? "Working‚Ä¶" : confirmText}
+        <button 
+          className="btn" 
+          onClick={onClose}
+          style={{ padding: "8px 16px" }}
+        >
+          Cancel
+        </button>
+        <button 
+          className="btn" 
+          disabled={busy} 
+          onClick={async () => { 
+            setBusy(true); 
+            try { 
+              await onConfirm?.(); 
+            } finally { 
+              setBusy(false); 
+            } 
+          }}
+          style={{ 
+            background: "#dc2626", 
+            color: "#fff", 
+            padding: "8px 16px" 
+          }}
+        >
+          {busy ? "WorkingÖ" : confirmText}
         </button>
       </div>
     </Modal>
   );
 }
-function OnOff({ value }) {
-  const on = !!value;
+
+function TypeBadge({ value }) {
+  const colors = {
+    "%": { bg: "#ede9fe", border: "#c4b5fd", text: "#6b21a8" },
+    "Fixed": { bg: "#dbeafe", border: "#93c5fd", text: "#1e40af" },
+    "Percentage": { bg: "#fef3c7", border: "#fcd34d", text: "#92400e" }
+  };
+  const color = colors[value] || colors["%"];
+  
   return (
     <span style={{
-      display: "inline-block", padding: ".15rem .5rem",
-      borderRadius: 999, background: on ? "#ecfdf5" : "#f3f4f6",
-      border: `1px solid ${on ? "#a7f3d0" : "#e5e7eb"}`,
-      color: on ? "#15803d" : "#334155", fontSize: ".75rem", fontWeight: 700
+      display: "inline-block",
+      padding: "4px 10px",
+      borderRadius: 6,
+      background: color.bg,
+      border: `1px solid ${color.border}`,
+      color: color.text,
+      fontSize: "12px",
+      fontWeight: 600
     }}>
-      {on ? "Active" : "Inactive"}
+      {value || "%"}
     </span>
   );
 }
 
-const btnSm = { padding: ".3rem .5rem", marginRight: 4, fontWeight: 700 };
-const backdropStyle = { position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", display: "grid", placeItems: "center", zIndex: 1000 };
-const modalStyle = { width: "min(600px, 100%)", background: "#fff", borderRadius: 12, boxShadow: "0 20px 60px rgba(0,0,0,.22)", overflow: "hidden" };
-const headerStyle = { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid #e5e7eb" };
-const xStyle = { border: "1px solid #e5e7eb", background: "#fff", borderRadius: 6, width: 30, height: 30, cursor: "pointer" };
-function fmtDate(d) { if (!d) return "‚Äî"; const dt = new Date(d); return Number.isNaN(dt) ? "‚Äî" : dt.toLocaleDateString(); }
+function formatCommission(value, type) {
+  if (value === null || value === undefined || value === "") return "ó";
+  const num = Number(value);
+  if (isNaN(num)) return "ó";
+  
+  if (type === "%") return `${num}%`;
+  if (type === "Fixed") return `?${num.toFixed(2)}`;
+  if (type === "Percentage") return `${num}%`;
+  return num.toString();
+}
+
+const btnSm = { 
+  padding: ".4rem .6rem", 
+  marginRight: 6, 
+  fontSize: "16px",
+  border: "1px solid #e5e7eb",
+  background: "#fff",
+  cursor: "pointer",
+  borderRadius: 6
+};
+
+const backdropStyle = { 
+  position: "fixed", 
+  inset: 0, 
+  background: "rgba(0,0,0,.5)", 
+  display: "grid", 
+  placeItems: "center", 
+  zIndex: 1000,
+  backdropFilter: "blur(2px)"
+};
+
+const modalStyle = { 
+  width: "min(700px, 95%)", 
+  background: "#fff", 
+  borderRadius: 12, 
+  boxShadow: "0 20px 60px rgba(0,0,0,.3)", 
+  overflow: "hidden",
+  maxHeight: "90vh",
+  overflowY: "auto"
+};
+
+const headerStyle = { 
+  display: "flex", 
+  alignItems: "center", 
+  justifyContent: "space-between", 
+  padding: "16px 20px", 
+  borderBottom: "1px solid #e5e7eb",
+  background: "#f9fafb"
+};
+
+const xStyle = { 
+  border: "1px solid #d1d5db", 
+  background: "#fff", 
+  borderRadius: 6, 
+  width: 32, 
+  height: 32, 
+  cursor: "pointer",
+  fontSize: "20px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "#6b7280"
+};
+
+function fmtDate(d) { 
+  if (!d) return "ó"; 
+  const dt = new Date(d); 
+  return Number.isNaN(dt.getTime()) ? "ó" : dt.toLocaleDateString("en-IN", {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }); 
+}

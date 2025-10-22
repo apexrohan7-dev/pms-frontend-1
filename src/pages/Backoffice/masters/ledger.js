@@ -6,8 +6,9 @@ import "../../../components/sidebar/Sidebar.css";
 import "../../../assets/css/commanPage.css";
 
 const PAGE_SIZE = 10;
-// Optional helpers for a quick select; users can also type custom group names in the form.
+
 const LEDGER_GROUPS = ["ASSET", "LIABILITY", "INCOME", "EXPENSE", "BANK", "OTHER"];
+const REGISTRATION_TYPES = ["Regular", "Composition", "Unregistered"];
 
 export default function Ledger() {
   const [rows, setRows] = useState([]);
@@ -20,7 +21,6 @@ export default function Ledger() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
 
-  // modals
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [showDelete, setShowDelete] = useState(false);
@@ -50,7 +50,7 @@ export default function Ledger() {
           q,
           page,
           limit,
-          ...(filterProp ? { propertyCode: filterProp } : {}),
+          ...(filterProp ? { branch: filterProp } : {}),
         });
         const res = await apiFetch(`/api/ledgers?${params.toString()}`, { auth: true });
         const data = res?.data || res?.items || res || [];
@@ -72,12 +72,11 @@ export default function Ledger() {
     return () => { ignore = true; };
   }, [q, page, limit, filterProp]);
 
-  // Client fallback search
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return rows;
     return rows.filter(r =>
-      [r.propertyCode, r.code, r.name, r.group, r.description]
+      [r.branch, r.ledgerName, r.underGroup, r.panNo, r.gstIn, r.city]
         .filter(Boolean)
         .some(v => String(v).toLowerCase().includes(term))
     );
@@ -98,6 +97,7 @@ export default function Ledger() {
       const next = prev.slice(); next[idx] = saved; return next;
     });
   };
+  
   const afterDelete = (id) => {
     setShowDelete(false); setToDelete(null);
     setRows(prev => prev.filter(r => (r._id || r.id) !== id));
@@ -117,20 +117,20 @@ export default function Ledger() {
               className="res-select"
               value={filterProp}
               onChange={(e) => { setFilterProp(e.target.value); setPage(1); }}
-              title="Property"
+              title="Branch"
             >
-              <option value="">All Properties</option>
+              <option value="">All Branches</option>
               {propsList.map(p => (
-                <option key={p.code} value={p.code}>{p.code} ‚Äî {p.name}</option>
+                <option key={p.code} value={p.code}>{p.name}</option>
               ))}
             </select>
 
             <input
               className="res-select"
-              placeholder="Search (code / name / group / description)"
+              placeholder="Search (ledger name / PAN / GST / city)"
               value={q}
               onChange={(e) => { setQ(e.target.value); setPage(1); }}
-              style={{ minWidth: 320 }}
+              style={{ minWidth: 300 }}
             />
 
             <select
@@ -150,7 +150,7 @@ export default function Ledger() {
           <div className="panel-h">
             <span>Ledgers</span>
             <span className="small" style={{ color: "var(--muted)" }}>
-              {loading ? "Loading‚Ä¶" : `Total: ${total || dataToRender.length}`}
+              {loading ? "LoadingÖ" : `Total: ${total || dataToRender.length}`}
             </span>
           </div>
 
@@ -162,14 +162,14 @@ export default function Ledger() {
                 <thead>
                   <tr>
                     <th style={{ width: 90 }}>Action</th>
-                    <th>Property</th>
-                    <th>Code</th>
-                    <th>Name</th>
-                    <th>Group</th>
-                    <th>Description</th>
-                    <th>Active</th>
+                    <th>Branch</th>
+                    <th>Ledger Name</th>
+                    <th>Under Group</th>
+                    <th>Opening Balance</th>
+                    <th>PAN No</th>
+                    <th>GST IN</th>
+                    <th>City</th>
                     <th>Created</th>
-                    <th>Updated</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -182,17 +182,21 @@ export default function Ledger() {
                     return (
                       <tr key={id}>
                         <td>
-                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>‚úèÔ∏è</button>
-                          <button className="btn" style={btnSm} onClick={() => askDelete(r)}>üóëÔ∏è</button>
+                          <button className="btn" style={btnSm} onClick={() => openEdit(r)} title="Edit">??</button>
+                          <button className="btn" style={btnSm} onClick={() => askDelete(r)} title="Delete">???</button>
                         </td>
-                        <td>{r.propertyCode || "‚Äî"}</td>
-                        <td>{r.code}</td>
-                        <td>{r.name}</td>
-                        <td>{r.group || "‚Äî"}</td>
-                        <td title={r.description || ""}>{r.description || "‚Äî"}</td>
-                        <td><OnOff value={r.isActive} /></td>
+                        <td>{r.branch || "ó"}</td>
+                        <td>{r.ledgerName || "ó"}</td>
+                        <td>{r.underGroup || "ó"}</td>
+                        <td>
+                          {r.openingBalance !== undefined && r.openingBalance !== null
+                            ? `${r.openingBalance} ${r.balanceType || 'CR'}`
+                            : "ó"}
+                        </td>
+                        <td>{r.panNo || "ó"}</td>
+                        <td>{r.gstIn || "ó"}</td>
+                        <td>{r.city || "ó"}</td>
                         <td>{fmtDate(r.createdAt)}</td>
-                        <td>{fmtDate(r.updatedAt)}</td>
                       </tr>
                     );
                   })}
@@ -203,7 +207,7 @@ export default function Ledger() {
             {/* Pagination */}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginTop: 8 }}>
               <button className="btn" disabled={page <= 1 || loading} onClick={() => setPage(p => Math.max(1, p - 1))}>
-                ‚Äπ Prev
+                ã Prev
               </button>
               <span className="small" style={{ alignSelf: "center", color: "var(--muted)" }}>Page {page}</span>
               <button
@@ -211,7 +215,7 @@ export default function Ledger() {
                 disabled={loading || (!total ? dataToRender.length < limit : page * limit >= total)}
                 onClick={() => setPage(p => p + 1)}
               >
-                Next ‚Ä∫
+                Next õ
               </button>
             </div>
           </div>
@@ -230,7 +234,7 @@ export default function Ledger() {
       {showDelete && (
         <ConfirmModal
           title="Delete Ledger?"
-          message={`Delete ledger "${toDelete?.name}" (${toDelete?.code})? This cannot be undone.`}
+          message={`Delete ledger "${toDelete?.ledgerName}"? This cannot be undone.`}
           confirmText="Delete"
           onClose={() => { setShowDelete(false); setToDelete(null); }}
           onConfirm={async () => {
@@ -251,40 +255,128 @@ function LedgerFormModal({ initial, onClose, onSaved, propsList }) {
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
 
-  const [propertyCode, setPropertyCode] = useState(initial?.propertyCode || "");
-  const [code, setCode] = useState(initial?.code || "");
-  const [name, setName] = useState(initial?.name || "");
-  const [group, setGroup] = useState(initial?.group || "");
-  const [description, setDescription] = useState(initial?.description || "");
-  const [isActive, setIsActive] = useState(initial?.isActive ?? true);
+  // Row 1
+  const [branch, setBranch] = useState(initial?.branch || "");
+  
+  // Row 2
+  const [underGroup, setUnderGroup] = useState(initial?.underGroup || "");
+  const [ledgerName, setLedgerName] = useState(initial?.ledgerName || "");
+  const [shortName, setShortName] = useState(initial?.shortName || "");
+  const [openingBalance, setOpeningBalance] = useState(initial?.openingBalance?.toString() || "0");
+  const [balanceType, setBalanceType] = useState(initial?.balanceType || "CR");
+  
+  // Row 3
+  const [panNo, setPanNo] = useState(initial?.panNo || "");
+  const [country, setCountry] = useState(initial?.country || "");
+  const [state, setState] = useState(initial?.state || "");
+  const [city, setCity] = useState(initial?.city || "");
+  
+  // Row 4
+  const [address, setAddress] = useState(initial?.address || "");
+  const [gstIn, setGstIn] = useState(initial?.gstIn || "");
+  const [registrationType, setRegistrationType] = useState(initial?.registrationType || "");
+
+  const [countries] = useState([
+    { code: "IN", name: "India" },
+    { code: "US", name: "United States" },
+    { code: "UK", name: "United Kingdom" },
+    { code: "AE", name: "United Arab Emirates" }
+  ]);
+  
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+
+  // Update states when country changes
+  useEffect(() => {
+    if (country === "IN") {
+      setStates([
+        { code: "MH", name: "Maharashtra" },
+        { code: "DL", name: "Delhi" },
+        { code: "KA", name: "Karnataka" },
+        { code: "GJ", name: "Gujarat" },
+        { code: "TN", name: "Tamil Nadu" }
+      ]);
+    } else {
+      setStates([]);
+      setState("");
+    }
+  }, [country]);
+
+  // Update cities when state changes
+  useEffect(() => {
+    if (state === "MH") {
+      setCities([
+        { name: "Mumbai" },
+        { name: "Pune" },
+        { name: "Thane" },
+        { name: "Nagpur" }
+      ]);
+    } else if (state === "DL") {
+      setCities([
+        { name: "New Delhi" },
+        { name: "Delhi" }
+      ]);
+    } else if (state === "KA") {
+      setCities([
+        { name: "Bangalore" },
+        { name: "Mysore" }
+      ]);
+    } else {
+      setCities([]);
+      setCity("");
+    }
+  }, [state]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    setErr(""); setOk("");
+    setErr(""); 
+    setOk("");
 
-    if (!code.trim()) return setErr("Code is required");
-    if (!name.trim()) return setErr("Name is required");
+    // Validation
+    if (!branch) return setErr("Branch is required");
+    if (!ledgerName.trim()) return setErr("Ledger Name is required");
+    if (openingBalance === "" || openingBalance === null) return setErr("Opening Balance is required");
+    if (!country) return setErr("Country is required");
+    if (!state) return setErr("State is required");
+    if (!city) return setErr("City is required");
 
     const payload = {
-      propertyCode: propertyCode ? propertyCode.trim().toUpperCase() : "",
-      code: code.trim().toUpperCase(),
-      name: name.trim(),
-      group: group.trim(),
-      description,
-      isActive,
+      branch,
+      underGroup: underGroup || undefined, // Don't send empty string
+      ledgerName: ledgerName.trim(),
+      shortName: shortName.trim() || undefined,
+      openingBalance: parseFloat(openingBalance) || 0,
+      balanceType,
+      panNo: panNo.trim() || undefined,
+      country,
+      state,
+      city,
+      address: address.trim() || undefined,
+      gstIn: gstIn.trim() || undefined,
+      registrationType: registrationType || undefined,
     };
+
+    console.log("Saving ledger:", payload);
 
     setSaving(true);
     try {
       let saved;
       if (isEdit) {
         const id = initial._id || initial.id;
-        saved = await apiFetch(`/api/ledgers/${id}`, { method: "PATCH", auth: true, body: JSON.stringify(payload) });
+        saved = await apiFetch(`/api/ledgers/${id}`, { 
+          method: "PATCH", 
+          auth: true, 
+          body: JSON.stringify(payload) 
+        });
       } else {
-        saved = await apiFetch("/api/ledgers", { method: "POST", auth: true, body: JSON.stringify(payload) });
+        saved = await apiFetch("/api/ledgers", { 
+          method: "POST", 
+          auth: true, 
+          body: JSON.stringify(payload) 
+        });
       }
-      setOk("Saved.");
-      onSaved(saved);
+      setOk("Saved successfully!");
+      setTimeout(() => onSaved(saved), 500);
     } catch (e2) {
       setErr(e2?.message || "Failed to save ledger.");
     } finally {
@@ -292,62 +384,251 @@ function LedgerFormModal({ initial, onClose, onSaved, propsList }) {
     }
   };
 
+  const handleReset = () => {
+    if (isEdit) {
+      setBranch(initial?.branch || "");
+      setUnderGroup(initial?.underGroup || "");
+      setLedgerName(initial?.ledgerName || "");
+      setShortName(initial?.shortName || "");
+      setOpeningBalance(initial?.openingBalance?.toString() || "0");
+      setBalanceType(initial?.balanceType || "CR");
+      setPanNo(initial?.panNo || "");
+      setCountry(initial?.country || "");
+      setState(initial?.state || "");
+      setCity(initial?.city || "");
+      setAddress(initial?.address || "");
+      setGstIn(initial?.gstIn || "");
+      setRegistrationType(initial?.registrationType || "");
+    } else {
+      setBranch("");
+      setUnderGroup("");
+      setLedgerName("");
+      setShortName("");
+      setOpeningBalance("0");
+      setBalanceType("CR");
+      setPanNo("");
+      setCountry("");
+      setState("");
+      setCity("");
+      setAddress("");
+      setGstIn("");
+      setRegistrationType("");
+    }
+    setErr("");
+    setOk("");
+  };
+
   return (
-    <Modal title={isEdit ? "Edit Ledger" : "Create Ledger"} onClose={onClose}>
+    <Modal title={isEdit ? "Edit Ledger" : "Add Ledger"} onClose={onClose}>
       {err && <Banner type="err">{err}</Banner>}
       {ok && <Banner type="ok">{ok}</Banner>}
 
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-        <Row>
-          <Field label="Property">
+      <form onSubmit={onSubmit}>
+        {/* Row 1: Branch */}
+        <div style={{ marginBottom: 16 }}>
+          <Field label="Branch" required>
             <select
-              className="res-select"
-              value={propertyCode}
-              onChange={(e) => setPropertyCode(e.target.value)}
+              className="input"
+              value={branch}
+              onChange={(e) => setBranch(e.target.value)}
+              style={{ cursor: "pointer", width: "100%" }}
             >
-              <option value="">‚Äî None ‚Äî</option>
-              {propsList.map(p => <option key={p.code} value={p.code}>{p.code} ‚Äî {p.name}</option>)}
+              <option value="">Select Branch</option>
+              {propsList.map(p => (
+                <option key={p.code} value={p.code}>{p.name}</option>
+              ))}
             </select>
           </Field>
-          <Field label="Code" required>
-            <input className="input" value={code} onChange={e => setCode(e.target.value)} />
-          </Field>
-          <Field label="Name" required>
-            <input className="input" value={name} onChange={e => setName(e.target.value)} />
-          </Field>
-        </Row>
+        </div>
 
-        <Row>
-          <Field label="Group">
+        {/* Row 2: Under Group, Ledger Name, Short Name, Opening Balance */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1.5fr", gap: 16, marginBottom: 16 }}>
+          <Field label="Under Group">
+            <select
+              className="input"
+              value={underGroup}
+              onChange={(e) => setUnderGroup(e.target.value)}
+              style={{ cursor: "pointer" }}
+            >
+              <option value="">--Select--</option>
+              {LEDGER_GROUPS.map(g => (
+                <option key={g} value={g}>{g}</option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Ledger Name" required>
             <input
               className="input"
-              list="ledger-groups"
-              value={group}
-              onChange={e => setGroup(e.target.value)}
-              placeholder="ASSET / LIABILITY / INCOME / EXPENSE ‚Ä¶"
+              value={ledgerName}
+              onChange={(e) => setLedgerName(e.target.value)}
+              placeholder="Enter ledger name"
             />
-            <datalist id="ledger-groups">
-              {LEDGER_GROUPS.map(g => <option key={g} value={g} />)}
-            </datalist>
           </Field>
-          <Field label="Active">
-            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} />
-              <span>{isActive ? "Yes" : "No"}</span>
-            </label>
-          </Field>
-        </Row>
 
-        <Row>
-          <Field label="Description">
-            <textarea className="input" rows={2} value={description} onChange={e => setDescription(e.target.value)} />
+          <Field label="Short Name">
+            <input
+              className="input"
+              value={shortName}
+              onChange={(e) => setShortName(e.target.value)}
+              placeholder="Short name"
+            />
           </Field>
-        </Row>
 
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button type="button" className="btn" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn" disabled={saving}>
-            {saving ? "Saving‚Ä¶" : (isEdit ? "Update" : "Create")}
+          <Field label="Opening Balance" required>
+            <div style={{ display: "flex", gap: 4 }}>
+              <input
+                className="input"
+                type="number"
+                value={openingBalance}
+                onChange={(e) => setOpeningBalance(e.target.value)}
+                placeholder="0"
+                step="0.01"
+                style={{ flex: 1 }}
+              />
+              <select
+                className="input"
+                value={balanceType}
+                onChange={(e) => setBalanceType(e.target.value)}
+                style={{ width: 70, cursor: "pointer" }}
+              >
+                <option value="CR">CR</option>
+                <option value="DR">DR</option>
+              </select>
+            </div>
+          </Field>
+        </div>
+
+        {/* Row 3: PAN No, Country, State, City */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 16 }}>
+          <Field label="PAN No.">
+            <input
+              className="input"
+              value={panNo}
+              onChange={(e) => setPanNo(e.target.value)}
+              placeholder="PAN number"
+              maxLength={10}
+            />
+          </Field>
+
+          <Field label="Country" required>
+            <select
+              className="input"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              style={{ cursor: "pointer" }}
+            >
+              <option value="">--Select--</option>
+              {countries.map(c => (
+                <option key={c.code} value={c.code}>{c.name}</option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="State" required>
+            <select
+              className="input"
+              value={state}
+              onChange={(e) => setState(e.target.value)}
+              style={{ cursor: "pointer" }}
+              disabled={!country}
+            >
+              <option value="">--Select--</option>
+              {states.map(s => (
+                <option key={s.code} value={s.code}>{s.name}</option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="City" required>
+            <select
+              className="input"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              style={{ cursor: "pointer" }}
+              disabled={!state}
+            >
+              <option value="">--Select--</option>
+              {cities.map(c => (
+                <option key={c.name} value={c.name}>{c.name}</option>
+              ))}
+            </select>
+          </Field>
+        </div>
+
+        {/* Row 4: Address, GST IN, Registration Type */}
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 16, marginBottom: 20 }}>
+          <Field label="Address">
+            <input
+              className="input"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Enter address"
+            />
+          </Field>
+
+          <Field label="Gst In">
+            <input
+              className="input"
+              value={gstIn}
+              onChange={(e) => setGstIn(e.target.value)}
+              placeholder="GST number"
+              maxLength={15}
+            />
+          </Field>
+
+          <Field label="Registration Type">
+            <select
+              className="input"
+              value={registrationType}
+              onChange={(e) => setRegistrationType(e.target.value)}
+              style={{ cursor: "pointer" }}
+            >
+              <option value="">--Select--</option>
+              {REGISTRATION_TYPES.map(t => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </Field>
+        </div>
+
+        {/* Buttons */}
+        <div style={{
+          display: "flex",
+          gap: 8,
+          justifyContent: "flex-start",
+          paddingTop: 16,
+          borderTop: "1px solid #e5e7eb"
+        }}>
+          <button
+            type="submit"
+            className="btn"
+            disabled={saving}
+            style={{
+              background: "#667eea",
+              color: "#fff",
+              padding: "10px 24px",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px"
+            }}
+          >
+            {saving ? "SavingÖ" : "SAVE"}
+          </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={handleReset}
+            style={{
+              background: "#dc2626",
+              color: "#fff",
+              padding: "10px 24px",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px"
+            }}
+          >
+            RESET
           </button>
         </div>
       </form>
@@ -355,69 +636,165 @@ function LedgerFormModal({ initial, onClose, onSaved, propsList }) {
   );
 }
 
-/* ---------- Tiny UI helpers ---------- */
-function Row({ children }) {
-  return <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(3, minmax(160px, 1fr))" }}>{children}</div>;
-}
+/* ---------- UI Helpers ---------- */
 function Field({ label, required, children }) {
   return (
     <label style={{ display: "grid", gap: 6 }}>
-      <span className="label" style={{ fontWeight: 700 }}>
-        {label} {required && <span style={{ color: "#b91c1c" }}>*</span>}
+      <span style={{ fontWeight: 600, fontSize: "14px", color: "#374151" }}>
+        {label}
+        {required && <span style={{ color: "#dc2626", marginLeft: 2 }}>*</span>}
       </span>
       {children}
     </label>
   );
 }
+
 function Banner({ type = "ok", children }) {
   const style = type === "err"
     ? { background: "#fef2f2", color: "#991b1b", border: "1px solid #fecaca" }
     : { background: "#dcfce7", color: "#166534", border: "1px solid #bbf7d0" };
-  return <div style={{ ...style, padding: "8px 10px", borderRadius: 10, fontWeight: 700, marginBottom: 10 }}>{children}</div>;
+  return (
+    <div style={{
+      ...style,
+      padding: "10px 12px",
+      borderRadius: 8,
+      fontWeight: 600,
+      marginBottom: 16,
+      fontSize: "14px"
+    }}>
+      {children}
+    </div>
+  );
 }
+
 function Modal({ title, onClose, children }) {
   return (
     <div style={backdropStyle}>
       <div style={modalStyle}>
         <div style={headerStyle}>
-          <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800 }}>{title}</h3>
-          <button onClick={onClose} aria-label="Close" style={xStyle}>√ó</button>
+          <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 600 }}>{title}</h3>
+          <button onClick={onClose} aria-label="Close" style={xStyle}>◊</button>
         </div>
-        <div style={{ padding: 16 }}>{children}</div>
+        <div style={{ padding: 20 }}>{children}</div>
       </div>
     </div>
   );
 }
+
 function ConfirmModal({ title, message, confirmText = "OK", onConfirm, onClose }) {
   const [busy, setBusy] = useState(false);
   return (
     <Modal title={title} onClose={onClose}>
-      <p style={{ marginTop: 0 }}>{message}</p>
-      <div className="cp-actions" style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-        <button className="btn" type="button" onClick={onClose}>Cancel</button>
-        <button className="btn" type="button" disabled={busy} onClick={async () => { setBusy(true); try { await onConfirm?.(); onClose(); } finally { setBusy(false); } }}>
-          {busy ? "Working‚Ä¶" : confirmText}
+      <p style={{ marginTop: 0, marginBottom: 20, color: "#4b5563" }}>{message}</p>
+      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+        <button
+          className="btn"
+          onClick={onClose}
+          style={{ padding: "8px 16px" }}
+        >
+          Cancel
+        </button>
+        <button
+          className="btn"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            try {
+              await onConfirm?.();
+            } finally {
+              setBusy(false);
+            }
+          }}
+          style={{
+            background: "#dc2626",
+            color: "#fff",
+            padding: "8px 16px"
+          }}
+        >
+          {busy ? "WorkingÖ" : confirmText}
         </button>
       </div>
     </Modal>
   );
 }
+
 function OnOff({ value }) {
   const on = !!value;
   return (
     <span style={{
-      display: "inline-block", padding: ".15rem .5rem",
-      borderRadius: 999, background: on ? "#ecfdf5" : "#f3f4f6",
+      display: "inline-block",
+      padding: ".15rem .5rem",
+      borderRadius: 999,
+      background: on ? "#ecfdf5" : "#f3f4f6",
       border: `1px solid ${on ? "#a7f3d0" : "#e5e7eb"}`,
-      color: on ? "#15803d" : "#334155", fontSize: ".75rem", fontWeight: 700
+      color: on ? "#15803d" : "#334155",
+      fontSize: ".75rem",
+      fontWeight: 700
     }}>
       {on ? "Active" : "Inactive"}
     </span>
   );
 }
-const btnSm = { padding: ".3rem .5rem", marginRight: 4, fontWeight: 700 };
-const backdropStyle = { position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", display: "grid", placeItems: "center", zIndex: 1000 };
-const modalStyle = { width: "min(900px, calc(100% - 24px))", background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,.22)", overflow: "hidden" };
-const headerStyle = { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid #e5e7eb", background: "#fff" };
-const xStyle = { border: "1px solid #e5e7eb", background: "#fff", color: "#111827", borderRadius: 10, width: 36, height: 36, cursor: "pointer" };
-function fmtDate(d) { if (!d) return "‚Äî"; const dt = new Date(d); return Number.isNaN(dt) ? "‚Äî" : dt.toLocaleDateString(); }
+
+const btnSm = {
+  padding: ".4rem .6rem",
+  marginRight: 6,
+  fontSize: "16px",
+  border: "1px solid #e5e7eb",
+  background: "#fff",
+  cursor: "pointer",
+  borderRadius: 6
+};
+
+const backdropStyle = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(0,0,0,.5)",
+  display: "grid",
+  placeItems: "center",
+  zIndex: 1000,
+  backdropFilter: "blur(2px)"
+};
+
+const modalStyle = {
+  width: "min(1000px, 95%)",
+  background: "#fff",
+  borderRadius: 12,
+  boxShadow: "0 20px 60px rgba(0,0,0,.3)",
+  overflow: "hidden",
+  maxHeight: "90vh",
+  overflowY: "auto"
+};
+
+const headerStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "16px 20px",
+  borderBottom: "1px solid #e5e7eb",
+  background: "#f9fafb"
+};
+
+const xStyle = {
+  border: "1px solid #d1d5db",
+  background: "#fff",
+  borderRadius: 6,
+  width: 32,
+  height: 32,
+  cursor: "pointer",
+  fontSize: "20px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "#6b7280"
+};
+
+function fmtDate(d) {
+  if (!d) return "ó";
+  const dt = new Date(d);
+  return Number.isNaN(dt.getTime()) ? "ó" : dt.toLocaleDateString("en-IN", {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+}

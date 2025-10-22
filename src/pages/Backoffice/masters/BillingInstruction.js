@@ -74,7 +74,7 @@ export default function BillingInstruction() {
     const term = q.trim().toLowerCase();
     if (!term) return rows;
     return rows.filter(r =>
-      [r.propertyCode, r.code, r.title, r.instruction]
+      [r.propertyCode, r.code]
         .filter(Boolean)
         .some(v => String(v).toLowerCase().includes(term))
     );
@@ -118,13 +118,13 @@ export default function BillingInstruction() {
             >
               <option value="">All Properties</option>
               {propsList.map(p => (
-                <option key={p.code} value={p.code}>{p.code} ‚Äî {p.name}</option>
+                <option key={p.code} value={p.code}>{p.code} ó {p.name}</option>
               ))}
             </select>
 
             <input
               className="res-select"
-              placeholder="Search (property / code / title / instruction)"
+              placeholder="Search (property / code / title / description)"
               value={q}
               onChange={(e) => { setQ(e.target.value); setPage(1); }}
               style={{ minWidth: 320 }}
@@ -145,7 +145,7 @@ export default function BillingInstruction() {
           <div className="panel-h">
             <span>Billing Instructions</span>
             <span className="small" style={{ color: "var(--muted)" }}>
-              {loading ? "Loading‚Ä¶" : `Total: ${total || dataToRender.length}`}
+              {loading ? "LoadingÖ" : `Total: ${total || dataToRender.length}`}
             </span>
           </div>
 
@@ -160,7 +160,7 @@ export default function BillingInstruction() {
                     <th>Property</th>
                     <th>Code</th>
                     <th>Title</th>
-                    <th>Instruction</th>
+                    <th>Description</th>
                     <th>Active</th>
                     <th>Created</th>
                     <th>Updated</th>
@@ -176,13 +176,13 @@ export default function BillingInstruction() {
                     return (
                       <tr key={id}>
                         <td>
-                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>‚úèÔ∏è</button>
-                          <button className="btn" style={btnSm} onClick={() => askDelete(r)}>üóëÔ∏è</button>
+                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>??</button>
+                          <button className="btn" style={btnSm} onClick={() => askDelete(r)}>???</button>
                         </td>
-                        <td>{r.propertyCode || "‚Äî"}</td>
+                        <td>{r.propertyCode || "ó"}</td>
                         <td>{r.code}</td>
                         <td>{r.title}</td>
-                        <td title={r.instruction || ""}>{r.instruction ? trunc(r.instruction, 64) : "‚Äî"}</td>
+                        <td title={r.description || ""}>{r.description ? trunc(r.description, 64) : "ó"}</td>
                         <td><OnOff value={r.isActive} /></td>
                         <td>{fmtDate(r.createdAt)}</td>
                         <td>{fmtDate(r.updatedAt)}</td>
@@ -196,7 +196,7 @@ export default function BillingInstruction() {
             {/* Pagination */}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginTop: 8 }}>
               <button className="btn" disabled={page <= 1 || loading} onClick={() => setPage(p => Math.max(1, p - 1))}>
-                ‚Äπ Prev
+                ã Prev
               </button>
               <span className="small" style={{ alignSelf: "center", color: "var(--muted)" }}>Page {page}</span>
               <button
@@ -204,7 +204,7 @@ export default function BillingInstruction() {
                 disabled={loading || (!total ? dataToRender.length < limit : page * limit >= total)}
                 onClick={() => setPage(p => p + 1)}
               >
-                Next ‚Ä∫
+                Next õ
               </button>
             </div>
           </div>
@@ -247,22 +247,20 @@ function BillingInstructionForm({ initial, onClose, onSaved, propsList, defaultP
 
   const [propertyCode, setPropertyCode] = useState(initial?.propertyCode || defaultProp || "");
   const [code, setCode] = useState(initial?.code || "");
-  const [title, setTitle] = useState(initial?.title || "");
-  const [instruction, setInstruction] = useState(initial?.instruction || "");
-  const [isActive, setIsActive] = useState(initial?.isActive ?? true);
+  const [isActive, setIsActive] = useState(initial?.isActive ?? false);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setErr(""); setOk("");
 
-    if (!code.trim()) return setErr("Code is required");
-    if (!title.trim()) return setErr("Title is required");
+    if (!propertyCode.trim()) return setErr("Branch is required");
+    if (!code.trim()) return setErr("Name is required");
 
     const payload = {
       propertyCode: propertyCode ? propertyCode.trim().toUpperCase() : "",
       code: code.trim().toUpperCase(),
-      title: title.trim(),
-      instruction,
+      title: code.trim(), // Use code as title
+      description: "", // Empty description
       isActive,
     };
 
@@ -290,47 +288,46 @@ function BillingInstructionForm({ initial, onClose, onSaved, propsList, defaultP
       {ok && <Banner type="ok">{ok}</Banner>}
 
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-        <Row>
-          <Field label="Property">
+        <Row cols={2}>
+          <Field label="Branch" required>
             <select
               className="res-select"
               value={propertyCode}
               onChange={(e) => setPropertyCode(e.target.value)}
             >
-              <option value="">‚Äî None ‚Äî</option>
-              {propsList.map(p => <option key={p.code} value={p.code}>{p.code} ‚Äî {p.name}</option>)}
+              <option value="">Select Branch</option>
+              {propsList.map(p => <option key={p.code} value={p.code}>{p.name}</option>)}
             </select>
           </Field>
-          <Field label="Code" required>
-            <input className="input" value={code} onChange={e => setCode(e.target.value)} />
-          </Field>
-          <Field label="Title" required>
-            <input className="input" value={title} onChange={e => setTitle(e.target.value)} />
-          </Field>
-        </Row>
-
-        <Row>
-          <Field label="Instruction">
-            <textarea
-              className="input"
-              rows={4}
-              placeholder="e.g., 'Bill to company XYZ; attach PO; GST 18%; ...'"
-              value={instruction}
-              onChange={e => setInstruction(e.target.value)}
+          <Field label="Name" required>
+            <input 
+              className="input" 
+              value={code} 
+              onChange={e => setCode(e.target.value)}
+              placeholder="Enter instruction name"
             />
           </Field>
-          <Field label="Active">
-            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} />
-              <span>{isActive ? "Yes" : "No"}</span>
-            </label>
+        </Row>
+
+        <Row cols={1}>
+          <Field label="Type">
+            <select
+              className="res-select"
+              value={isActive ? "Yes" : "No"}
+              onChange={(e) => setIsActive(e.target.value === "Yes")}
+            >
+              <option value="No">No</option>
+              <option value="Yes">Yes</option>
+            </select>
           </Field>
         </Row>
 
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button type="button" className="btn" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn" disabled={saving}>
-            {saving ? "Saving‚Ä¶" : (isEdit ? "Update" : "Create")}
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 8 }}>
+          <button type="submit" className="btn" disabled={saving} style={{ background: "#7c3aed", color: "#fff" }}>
+            {saving ? "SAVINGÖ" : "SAVE"}
+          </button>
+          <button type="button" className="btn" onClick={onClose} style={{ background: "#dc2626", color: "#fff" }}>
+            RESET
           </button>
         </div>
       </form>
@@ -339,8 +336,8 @@ function BillingInstructionForm({ initial, onClose, onSaved, propsList, defaultP
 }
 
 /* ---------- Tiny UI helpers ---------- */
-function Row({ children }) {
-  return <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(3, minmax(160px, 1fr))" }}>{children}</div>;
+function Row({ children, cols = 3 }) {
+  return <div style={{ display: "grid", gap: 12, gridTemplateColumns: `repeat(${cols}, minmax(160px, 1fr))` }}>{children}</div>;
 }
 function Field({ label, required, children }) {
   return (
@@ -364,7 +361,7 @@ function Modal({ title, onClose, children }) {
       <div style={modalStyle}>
         <div style={headerStyle}>
           <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800 }}>{title}</h3>
-          <button onClick={onClose} aria-label="Close" style={xStyle}>√ó</button>
+          <button onClick={onClose} aria-label="Close" style={xStyle}>◊</button>
         </div>
         <div style={{ padding: 16 }}>{children}</div>
       </div>
@@ -377,9 +374,25 @@ function ConfirmModal({ title, message, confirmText = "OK", onConfirm, onClose }
     <Modal title={title} onClose={onClose}>
       <p style={{ marginTop: 0 }}>{message}</p>
       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-        <button className="btn" type="button" onClick={onClose}>Cancel</button>
-        <button className="btn" type="button" disabled={busy} onClick={async () => { setBusy(true); try { await onConfirm?.(); onClose(); } finally { setBusy(false); } }}>
-          {busy ? "Working‚Ä¶" : confirmText}
+        <button className="btn" type="button" onClick={onClose} style={{ background: "#6b7280", color: "#fff" }}>
+          Cancel
+        </button>
+        <button 
+          className="btn" 
+          type="button" 
+          disabled={busy} 
+          onClick={async () => { 
+            setBusy(true); 
+            try { 
+              await onConfirm?.(); 
+              onClose(); 
+            } finally { 
+              setBusy(false); 
+            } 
+          }}
+          style={{ background: "#dc2626", color: "#fff" }}
+        >
+          {busy ? "WorkingÖ" : confirmText}
         </button>
       </div>
     </Modal>
@@ -403,5 +416,5 @@ const backdropStyle = { position: "fixed", inset: 0, background: "rgba(0,0,0,.45
 const modalStyle = { width: "min(900px, calc(100% - 24px))", background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,.22)", overflow: "hidden" };
 const headerStyle = { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid #e5e7eb", background: "#fff" };
 const xStyle = { border: "1px solid #e5e7eb", background: "#fff", color: "#111827", borderRadius: 10, width: 36, height: 36, cursor: "pointer" };
-function fmtDate(d) { if (!d) return "‚Äî"; const dt = new Date(d); return Number.isNaN(dt) ? "‚Äî" : dt.toLocaleDateString(); }
-function trunc(s, n) { s = String(s || ""); return s.length > n ? s.slice(0, n - 1) + "‚Ä¶" : s; }
+function fmtDate(d) { if (!d) return "ó"; const dt = new Date(d); return Number.isNaN(dt) ? "ó" : dt.toLocaleDateString(); }
+function trunc(s, n) { s = String(s || ""); return s.length > n ? s.slice(0, n - 1) + "Ö" : s; }

@@ -37,6 +37,14 @@ import CityMaster from "./pages/Backoffice/masters/City";
 import AreaMaster from "./pages/Backoffice/masters/Area";
 import ZoneMaster from "./pages/Backoffice/masters/Zone";
 import TaxRateName from "./pages/Backoffice/masters/Taxratename";
+import TaxSlabMaster from "./pages/Backoffice/masters/TaxSlab";
+import TaxProcessMaster from "./pages/Backoffice/masters/TaxProcess";
+import OrderCancelTimeMaster from './pages/Backoffice/masters/OrderCancelTime';
+import BillNoSettingMaster from './pages/Backoffice/masters/BillNoSetting';
+import ReservationSettings from './pages/Backoffice/masters/ReservationSettings';
+import PinCode from './pages/Backoffice/masters/Pincode';
+import PropertyInformation from "./pages/Backoffice/masters/PropertyInformation";  
+
 
 
 
@@ -455,10 +463,10 @@ export default function App() {
           element={<ProtectedRoute><CityMaster /></ProtectedRoute>}
         />
 
-        <Route
-          path="/dashboard/backoffice/masters/area"
-          element={<ProtectedRoute><AreaMaster /></ProtectedRoute>}
-        />
+       <Route
+  path="/dashboard/backoffice/masters/area"
+  element={<ProtectedRoute><AreaMaster /></ProtectedRoute>}
+/>
 
         <Route
           path="/dashboard/backoffice/masters/zone"
@@ -469,7 +477,60 @@ export default function App() {
           path="/dashboard/backoffice/masters/tax-rate-name"
           element={<ProtectedRoute><TaxRateName /></ProtectedRoute>}
         />
-
+        
+        <Route
+  path="/dashboard/backoffice/masters/tax-slab"
+  element={<ProtectedRoute><TaxSlabMaster /></ProtectedRoute>}
+/>
+        <Route
+  path="/dashboard/backoffice/masters/tax-process"
+  element={<ProtectedRoute><TaxProcessMaster /></ProtectedRoute>}
+/>
+         <Route
+  path="/dashboard/backoffice/masters/order-cancel-time"
+  element={
+    <ProtectedRoute>
+      <OrderCancelTimeMaster />
+    </ProtectedRoute>
+  }
+/>
+      <Route
+          path="/dashboard/backoffice/masters/bill-no-setting"
+          element={
+            <ProtectedRoute>
+              <BillNoSettingMaster />
+            </ProtectedRoute>
+          }
+        />
+        
+        
+        <Route
+          path="/dashboard/backoffice/masters/reservation-settings"
+          element={
+            <ProtectedRoute>
+              <ReservationSettings />
+            </ProtectedRoute>
+          }
+        />
+        
+        
+        <Route
+          path="/dashboard/backoffice/masters/pincode"
+          element={
+            <ProtectedRoute>
+              <PinCode />
+            </ProtectedRoute>
+          }
+        />
+         
+         <Route
+  path="/dashboard/backoffice/masters/property-information"
+  element={
+    <ProtectedRoute>
+      <PropertyInformation />
+    </ProtectedRoute>
+  }
+/>
 
 
         {/* Settings */}

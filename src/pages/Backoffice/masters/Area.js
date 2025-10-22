@@ -6,11 +6,44 @@ import "../../../components/sidebar/Sidebar.css";
 import "../../../assets/css/commanPage.css";
 
 const PAGE_SIZE = 10;
-const getPropCode = () => (localStorage.getItem("currentPropertyCode") || "").toUpperCase();
+
+// Hardcoded countries list
+const COUNTRIES = [
+  { code: "AF", name: "Afghanistan" },
+  { code: "AU", name: "Australia" },
+  { code: "BD", name: "Bangladesh" },
+  { code: "BR", name: "Brazil" },
+  { code: "CA", name: "Canada" },
+  { code: "CN", name: "China" },
+  { code: "FR", name: "France" },
+  { code: "DE", name: "Germany" },
+  { code: "IN", name: "India" },
+  { code: "ID", name: "Indonesia" },
+  { code: "IT", name: "Italy" },
+  { code: "JP", name: "Japan" },
+  { code: "MY", name: "Malaysia" },
+  { code: "MX", name: "Mexico" },
+  { code: "NL", name: "Netherlands" },
+  { code: "PK", name: "Pakistan" },
+  { code: "PH", name: "Philippines" },
+  { code: "SG", name: "Singapore" },
+  { code: "ZA", name: "South Africa" },
+  { code: "KR", name: "South Korea" },
+  { code: "ES", name: "Spain" },
+  { code: "LK", name: "Sri Lanka" },
+  { code: "TH", name: "Thailand" },
+  { code: "AE", name: "United Arab Emirates" },
+  { code: "GB", name: "United Kingdom" },
+  { code: "US", name: "United States" },
+];
 
 export default function AreaMaster() {
   const [rows, setRows] = useState([]);
+  const [countriesList] = useState(COUNTRIES);
   const [q, setQ] = useState("");
+  const [branchFilter, setBranchFilter] = useState("");
+  const [countryFilter, setCountryFilter] = useState("");
+  const [stateFilter, setStateFilter] = useState("");
   const [cityFilter, setCityFilter] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(PAGE_SIZE);
@@ -20,46 +53,90 @@ export default function AreaMaster() {
 
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
-
+  const [properties, setProperties] = useState([]);
+  const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
 
-  // load cities for dropdowns (scoped to property)
+  // Load properties for dropdown
   useEffect(() => {
     (async () => {
       try {
-        const params = new URLSearchParams({ limit: 500, isActive: true, propertyCode: getPropCode() });
-        const res = await apiFetch(`/api/cities?${params.toString()}`, { auth: true });
+        const res = await apiFetch("/api/properties?limit=200", { auth: true });
         const data = res?.data || res || [];
-        setCities(Array.isArray(data) ? data : []);
-      } catch {/* ignore */}
+        setProperties(Array.isArray(data) ? data : []);
+      } catch { /* ignore */ }
     })();
   }, []);
 
-  // load areas
+  // Load states when country filter changes
+  useEffect(() => {
+    if (!countryFilter) {
+      setStates([]);
+      setStateFilter("");
+      return;
+    }
+    (async () => {
+      try {
+        const res = await apiFetch(`/api/states?countryCode=${countryFilter}&limit=500`, { auth: true });
+        const data = res?.data || res || [];
+        setStates(Array.isArray(data) ? data : []);
+      } catch { 
+        setStates([]);
+      }
+    })();
+  }, [countryFilter]);
+
+  // Load cities when state filter changes
+  useEffect(() => {
+    if (!stateFilter) {
+      setCities([]);
+      setCityFilter("");
+      return;
+    }
+    (async () => {
+      try {
+        const res = await apiFetch(`/api/cities?stateCode=${stateFilter}&limit=500`, { auth: true });
+        const data = res?.data || res || [];
+        setCities(Array.isArray(data) ? data : []);
+      } catch {
+        setCities([]);
+      }
+    })();
+  }, [stateFilter]);
+
+  // Load areas
   useEffect(() => {
     let ignore = false;
     (async () => {
       setLoading(true); setErr("");
       try {
-        const params = new URLSearchParams({ q, page, limit, propertyCode: getPropCode() });
+        const params = new URLSearchParams({ q, page, limit });
+        if (branchFilter) params.set("propertyCode", branchFilter);
+        if (countryFilter) params.set("countryCode", countryFilter);
+        if (stateFilter) params.set("stateCode", stateFilter);
         if (cityFilter) params.set("cityCode", cityFilter);
+
         const res = await apiFetch(`/api/areas?${params.toString()}`, { auth: true });
         const data = res?.data || res || [];
         const count = res?.total ?? data.length ?? 0;
         if (!ignore) { setRows(Array.isArray(data) ? data : []); setTotal(Number(count) || 0); }
       } catch (e) {
         if (!ignore) { setErr(e?.message || "Failed to load areas."); setRows([]); setTotal(0); }
-      } finally { if (!ignore) setLoading(false); }
+      } finally {
+        if (!ignore) setLoading(false);
+      }
     })();
     return () => { ignore = true; };
-  }, [q, page, limit, cityFilter]);
+  }, [q, page, limit, branchFilter, countryFilter, stateFilter, cityFilter]);
 
+  // Client search fallback
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return rows;
     return rows.filter(r =>
-      [r.code, r.name, r.cityCode, r.stateCode, r.pincode, r.description]
-        .filter(Boolean).some(v => String(v).toLowerCase().includes(term))
+      [r.propertyCode, r.countryCode, r.stateCode, r.cityCode, r.area]
+        .filter(Boolean)
+        .some(v => String(v).toLowerCase().includes(term))
     );
   }, [rows, q]);
 
@@ -82,6 +159,27 @@ export default function AreaMaster() {
     setTotal(t => Math.max(0, t - 1));
   };
 
+  // Helper functions to get names
+  const getPropertyName = (code) => {
+    const property = properties.find(p => p.code === code || p.propertyCode === code);
+    return property ? (property.name || property.propertyName) : code || "ó";
+  };
+
+  const getCountryName = (code) => {
+    const country = countriesList.find(c => c.code === code);
+    return country ? country.name : code || "ó";
+  };
+
+  const getStateName = (code) => {
+    const state = states.find(s => s.stateCode === code);
+    return state ? state.state : code || "ó";
+  };
+
+  const getCityName = (code) => {
+    const city = cities.find(c => c.cityCode === code);
+    return city ? city.city : code || "ó";
+  };
+
   return (
     <div className="page" style={{ display: "grid", gridTemplateColumns: "auto 1fr" }}>
       <BackofficeSidebar />
@@ -89,23 +187,63 @@ export default function AreaMaster() {
       <div className="res-wrap">
         <div className="res-topbar">
           <h2 style={{ margin: 0 }}>Area Master</h2>
-          <div style={{ display: "flex", gap: 8 }}>
-            <input
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <select
               className="res-select"
-              placeholder="Search (code / name / city / pincode / description)"
-              value={q}
-              onChange={(e) => { setQ(e.target.value); setPage(1); }}
-              style={{ minWidth: 320 }}
-            />
+              value={branchFilter}
+              onChange={(e) => { setBranchFilter(e.target.value); setPage(1); }}
+              title="Filter by Property"
+            >
+              <option value="">All Properties</option>
+              {properties.map(p => (
+                <option key={p._id || p.code} value={p.code || p.propertyCode}>
+                  {p.name || p.propertyName}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className="res-select"
+              value={countryFilter}
+              onChange={(e) => { setCountryFilter(e.target.value); setStateFilter(""); setCityFilter(""); setPage(1); }}
+              title="Filter by Country"
+            >
+              <option value="">All Countries</option>
+              {countriesList.map(c => (
+                <option key={c.code} value={c.code}>{c.name}</option>
+              ))}
+            </select>
+
+            <select
+              className="res-select"
+              value={stateFilter}
+              onChange={(e) => { setStateFilter(e.target.value); setCityFilter(""); setPage(1); }}
+              title="Filter by State"
+              disabled={!countryFilter}
+            >
+              <option value="">All States</option>
+              {states.map(s => <option key={s._id || s.stateCode} value={s.stateCode}>{s.state}</option>)}
+            </select>
+
             <select
               className="res-select"
               value={cityFilter}
               onChange={(e) => { setCityFilter(e.target.value); setPage(1); }}
               title="Filter by City"
+              disabled={!stateFilter}
             >
               <option value="">All Cities</option>
-              {cities.map(c => <option key={c._id || c.code} value={c.code}>{c.code} ‚Äî {c.name}</option>)}
+              {cities.map(c => <option key={c._id || c.cityCode} value={c.cityCode}>{c.city}</option>)}
             </select>
+
+            <input
+              className="res-select"
+              placeholder="Search areas"
+              value={q}
+              onChange={(e) => { setQ(e.target.value); setPage(1); }}
+              style={{ minWidth: 200 }}
+            />
+            
             <select
               className="res-select"
               value={limit}
@@ -121,10 +259,9 @@ export default function AreaMaster() {
           <div className="panel-h">
             <span>Areas</span>
             <span className="small" style={{ color: "var(--muted)" }}>
-              {loading ? "Loading‚Ä¶" : `Total: ${total || dataToRender.length}`}
+              {loading ? "LoadingÖ" : `Total: ${total || dataToRender.length}`}
             </span>
           </div>
-
           <div className="panel-b">
             {err && <Banner type="err">{err}</Banner>}
 
@@ -133,40 +270,39 @@ export default function AreaMaster() {
                 <thead>
                   <tr>
                     <th style={{ width: 90 }}>Action</th>
-                    <th>Code</th>
-                    <th>Name</th>
+                    <th>Property</th>
+                    <th>Country</th>
+                    <th>State</th>
                     <th>City</th>
-                    <th>Pincode</th>
-                    <th>Description</th>
-                    <th>Active</th>
+                    <th>Area</th>
                     <th>Created</th>
                     <th>Updated</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(!dataToRender || dataToRender.length === 0) && !loading && (
-                    <tr className="no-rows"><td colSpan={9}>No areas found</td></tr>
+                    <tr className="no-rows"><td colSpan={8}>No areas found</td></tr>
                   )}
+
                   {dataToRender?.map(r => {
                     const id = r._id || r.id;
                     return (
                       <tr key={id}>
                         <td>
-                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>‚úèÔ∏è</button>
+                          <button className="btn" style={btnSm} onClick={() => openEdit(r)}>??</button>
                           <button
                             className="btn" style={btnSm}
                             onClick={async () => {
                               await apiFetch(`/api/areas/${id}`, { method: "DELETE", auth: true });
                               afterDelete(id);
                             }}
-                          >üóëÔ∏è</button>
+                          >???</button>
                         </td>
-                        <td>{r.code}</td>
-                        <td>{r.name}</td>
-                        <td>{r.cityCode}</td>
-                        <td>{r.pincode || "‚Äî"}</td>
-                        <td title={r.description || ""}>{r.description || "‚Äî"}</td>
-                        <td><OnOff value={r.isActive} /></td>
+                        <td>{getPropertyName(r.propertyCode)}</td>
+                        <td>{getCountryName(r.countryCode)}</td>
+                        <td>{getStateName(r.stateCode)}</td>
+                        <td>{getCityName(r.cityCode)}</td>
+                        <td>{r.area || "ó"}</td>
                         <td>{fmtDate(r.createdAt)}</td>
                         <td>{fmtDate(r.updatedAt)}</td>
                       </tr>
@@ -177,9 +313,16 @@ export default function AreaMaster() {
             </div>
 
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginTop: 8 }}>
-              <button className="btn" disabled={page <= 1 || loading} onClick={() => setPage(p => Math.max(1, p - 1))}>‚Äπ Prev</button>
+              <button className="btn" disabled={page <= 1 || loading}
+                onClick={() => setPage(p => Math.max(1, p - 1))}>
+                ã Prev
+              </button>
               <span className="small" style={{ alignSelf: "center", color: "var(--muted)" }}>Page {page}</span>
-              <button className="btn" disabled={loading || (!total ? dataToRender.length < limit : page * limit >= total)} onClick={() => setPage(p => p + 1)}>Next ‚Ä∫</button>
+              <button className="btn"
+                disabled={loading || (!total ? dataToRender.length < limit : page * limit >= total)}
+                onClick={() => setPage(p => p + 1)}>
+                Next õ
+              </button>
             </div>
           </div>
         </div>
@@ -188,7 +331,8 @@ export default function AreaMaster() {
       {showForm && (
         <AreaFormModal
           initial={editing}
-          cities={cities}
+          properties={properties}
+          countriesList={countriesList}
           onClose={() => { setShowForm(false); setEditing(null); }}
           onSaved={afterSave}
         />
@@ -197,43 +341,73 @@ export default function AreaMaster() {
   );
 }
 
-/* ---------- Modal ---------- */
-function AreaFormModal({ initial, onClose, onSaved, cities }) {
+/* ---------- Form Modal ---------- */
+function AreaFormModal({ initial, onClose, onSaved, properties, countriesList }) {
   const isEdit = !!initial;
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
 
-  const [code, setCode] = useState(initial?.code || "");
-  const [name, setName] = useState(initial?.name || "");
-  const [cityCode, setCityCode] = useState(initial?.cityCode || "");
+  const [propertyCode, setPropertyCode] = useState(initial?.propertyCode || "");
+  const [countryCode, setCountryCode] = useState(initial?.countryCode || "");
   const [stateCode, setStateCode] = useState(initial?.stateCode || "");
-  const [pincode, setPincode] = useState(initial?.pincode || "");
-  const [description, setDescription] = useState(initial?.description || "");
-  const [isActive, setIsActive] = useState(initial?.isActive ?? true);
+  const [cityCode, setCityCode] = useState(initial?.cityCode || "");
+  const [area, setArea] = useState(initial?.area || "");
+  
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
 
-  // auto-fill stateCode when city selected (if your City page stores stateCode)
+  // Load states when country changes
   useEffect(() => {
-    if (!cityCode) return;
-    const city = cities.find(c => (c.code || "").toUpperCase() === cityCode.toUpperCase());
-    if (city?.stateCode && !stateCode) setStateCode(city.stateCode);
-  }, [cityCode, cities, stateCode]);
+    if (!countryCode) {
+      setStates([]);
+      setStateCode("");
+      return;
+    }
+    (async () => {
+      try {
+        const res = await apiFetch(`/api/states?countryCode=${countryCode}&limit=500`, { auth: true });
+        const data = res?.data || res || [];
+        setStates(Array.isArray(data) ? data : []);
+      } catch {
+        setStates([]);
+      }
+    })();
+  }, [countryCode]);
+
+  // Load cities when state changes
+  useEffect(() => {
+    if (!stateCode) {
+      setCities([]);
+      setCityCode("");
+      return;
+    }
+    (async () => {
+      try {
+        const res = await apiFetch(`/api/cities?stateCode=${stateCode}&limit=500`, { auth: true });
+        const data = res?.data || res || [];
+        setCities(Array.isArray(data) ? data : []);
+      } catch {
+        setCities([]);
+      }
+    })();
+  }, [stateCode]);
 
   const onSubmit = async (e) => {
     e.preventDefault(); setErr(""); setOk("");
-    if (!code.trim())  return setErr("Code is required");
-    if (!name.trim())  return setErr("Name is required");
+
+    if (!propertyCode.trim()) return setErr("Property is required");
+    if (!countryCode.trim()) return setErr("Country is required");
+    if (!stateCode.trim()) return setErr("State is required");
     if (!cityCode.trim()) return setErr("City is required");
+    if (!area.trim()) return setErr("Area is required");
 
     const payload = {
-      code: code.trim().toUpperCase(),
-      name: name.trim(),
+      propertyCode: propertyCode.trim().toUpperCase(),
+      countryCode: countryCode.trim().toUpperCase(),
+      stateCode: stateCode.trim().toUpperCase(),
       cityCode: cityCode.trim().toUpperCase(),
-      stateCode: (stateCode || "").trim().toUpperCase(),
-      pincode,
-      description,
-      isActive,
-      propertyCode: getPropCode(),
+      area: area.trim(),
     };
 
     setSaving(true);
@@ -245,61 +419,116 @@ function AreaFormModal({ initial, onClose, onSaved, cities }) {
       } else {
         saved = await apiFetch("/api/areas", { method: "POST", auth: true, body: JSON.stringify(payload) });
       }
-      setOk("Saved."); onSaved(saved);
+      setOk("Saved.");
+      onSaved(saved);
     } catch (e2) {
       setErr(e2?.message || "Failed to save area.");
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReset = () => {
+    setPropertyCode("");
+    setCountryCode("");
+    setStateCode("");
+    setCityCode("");
+    setArea("");
+    setErr("");
+    setOk("");
   };
 
   return (
-    <Modal title={isEdit ? "Edit Area" : "Create Area"} onClose={onClose}>
+    <Modal title={isEdit ? "Edit Area" : "Add Area"} onClose={onClose}>
       {err && <Banner type="err">{err}</Banner>}
       {ok && <Banner type="ok">{ok}</Banner>}
 
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
         <Row>
-          <Field label="Code" required><input className="input" value={code} onChange={e => setCode(e.target.value)} /></Field>
-          <Field label="Name" required><input className="input" value={name} onChange={e => setName(e.target.value)} /></Field>
-          <Field label="City" required>
-            <select className="res-select" value={cityCode} onChange={e => setCityCode(e.target.value)}>
-              <option value="">Select City</option>
-              {cities.map(c => <option key={c._id || c.code} value={c.code}>{c.code} ‚Äî {c.name}</option>)}
+          <Field label="Property" required>
+            <select
+              className="res-select"
+              value={propertyCode}
+              onChange={(e) => setPropertyCode(e.target.value)}
+            >
+              <option value="">--Select--</option>
+              {properties.map(p => (
+                <option key={p._id || p.code} value={p.code || p.propertyCode}>
+                  {p.name || p.propertyName}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Country" required>
+            <select
+              className="res-select"
+              value={countryCode}
+              onChange={(e) => setCountryCode(e.target.value)}
+            >
+              <option value="">--Select--</option>
+              {countriesList.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+            </select>
+          </Field>
+          <Field label="State" required>
+            <select
+              className="res-select"
+              value={stateCode}
+              onChange={(e) => setStateCode(e.target.value)}
+              disabled={!countryCode}
+            >
+              <option value="">--Select--</option>
+              {states.map(s => (
+                <option key={s._id || s.stateCode} value={s.stateCode}>{s.state}</option>
+              ))}
             </select>
           </Field>
         </Row>
 
         <Row>
-          <Field label="State (optional)">
-            <input className="input" value={stateCode} onChange={e => setStateCode(e.target.value)} placeholder="Auto-fill when city picked" />
+          <Field label="City" required>
+            <select
+              className="res-select"
+              value={cityCode}
+              onChange={(e) => setCityCode(e.target.value)}
+              disabled={!stateCode}
+            >
+              <option value="">--Select--</option>
+              {cities.map(c => (
+                <option key={c._id || c.cityCode} value={c.cityCode}>{c.city}</option>
+              ))}
+            </select>
           </Field>
-          <Field label="Pincode">
-            <input className="input" value={pincode} onChange={e => setPincode(e.target.value)} />
+          <Field label="Area" required>
+            <input className="input" value={area} onChange={e => setArea(e.target.value)} />
           </Field>
-          <Field label="Active">
-            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} />
-              <span>{isActive ? "Yes" : "No"}</span>
-            </label>
-          </Field>
+          <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+            <button 
+              type="button" 
+              className="btn" 
+              style={{ background: "#dc2626", color: "#fff", flex: 1 }} 
+              onClick={handleReset}
+            >
+              RESET
+            </button>
+            <button 
+              type="submit" 
+              className="btn" 
+              style={{ background: "#7c3aed", color: "#fff", flex: 1 }}
+              disabled={saving}
+            >
+              {saving ? "SavingÖ" : "SAVE"}
+            </button>
+          </div>
         </Row>
-
-        <Row>
-          <Field label="Description">
-            <textarea className="input" rows={2} value={description} onChange={e => setDescription(e.target.value)} />
-          </Field>
-        </Row>
-
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button type="button" className="btn" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn" disabled={saving}>{saving ? "Saving‚Ä¶" : (isEdit ? "Update" : "Create")}</button>
-        </div>
       </form>
     </Modal>
   );
 }
 
-/* ---------- tiny UI helpers ---------- */
-function Row({ children }) { return <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(3, minmax(160px, 1fr))" }}>{children}</div>; }
+/* ---------- Small UI bits ---------- */
+function Row({ children }) { 
+  return <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(3, minmax(160px, 1fr))" }}>{children}</div>; 
+}
 function Field({ label, required, children }) {
   return (
     <label style={{ display: "grid", gap: 6 }}>
@@ -320,29 +549,16 @@ function Modal({ title, onClose, children }) {
       <div style={modalStyle}>
         <div style={headerStyle}>
           <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800 }}>{title}</h3>
-          <button onClick={onClose} aria-label="Close" style={xStyle}>√ó</button>
+          <button onClick={onClose} aria-label="Close" style={xStyle}>◊</button>
         </div>
         <div style={{ padding: 16 }}>{children}</div>
       </div>
     </div>
   );
 }
-function OnOff({ value }) {
-  const on = !!value;
-  return (
-    <span style={{
-      display: "inline-block", padding: ".15rem .5rem",
-      borderRadius: 999, background: on ? "#ecfdf5" : "#f3f4f6",
-      border: `1px solid ${on ? "#a7f3d0" : "#e5e7eb"}`,
-      color: on ? "#15803d" : "#334155", fontSize: ".75rem", fontWeight: 700
-    }}>
-      {on ? "Active" : "Inactive"}
-    </span>
-  );
-}
 const btnSm = { padding: ".3rem .5rem", marginRight: 4, fontWeight: 700 };
 const backdropStyle = { position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", display: "grid", placeItems: "center", zIndex: 1000 };
 const modalStyle = { width: "min(900px, calc(100% - 24px))", background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,.22)", overflow: "hidden" };
 const headerStyle = { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid #e5e7eb", background: "#fff" };
-const xStyle = { border: "1px solid #e5e7eb", background: "#fff", color: "#111827", borderRadius: 10, width: 36, height: 36, cursor: "pointer" };
-function fmtDate(d) { if (!d) return "‚Äî"; const dt = new Date(d); return Number.isNaN(dt) ? "‚Äî" : dt.toLocaleDateString(); }
+const xStyle = { border: "1px solid #e5e5e5", background: "#fff", color: "#111827", borderRadius: 10, width: 36, height: 36, cursor: "pointer" };
+function fmtDate(d) { if (!d) return "ó"; const dt = new Date(d); return Number.isNaN(dt) ? "ó" : dt.toLocaleDateString(); }
