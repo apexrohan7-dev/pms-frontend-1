@@ -20,8 +20,8 @@ export function PosSidebar() {
       { key: "dashboard", label: "POS Dashboard", icon: "🛒", to: "/dashboard/pos" },
 
       {
-        key: "orders",
-        label: "Orders",
+        key: "F&B",
+        label: "F&B",
         icon: "🧾",
         to: "/dashboard/pos/orders",
         children: [
