@@ -2,6 +2,27 @@
 import { useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import "./Sidebar.css";
+// Import icons from react-icons
+import { 
+  MdDashboard, 
+  MdRestaurant, 
+  MdCleaningServices,
+  MdEventSeat,
+  MdInventory,
+  MdAssessment,
+  MdSettings,
+  MdShoppingCart,
+  MdLocalBar,
+  MdRoomService,
+  MdLocalLaundry,
+  MdDescription,
+  MdPrint,
+  MdCalendarToday,
+  MdCategory,
+  MdList,
+  MdPeople,
+  MdReceipt
+} from "react-icons/md";
 
 /**
  * POS Sidebar
@@ -17,12 +38,12 @@ export function PosSidebar() {
 
   const menus = useMemo(
     () => [
-      { key: "dashboard", label: "POS Dashboard", icon: "🛒", to: "/dashboard/pos" },
+      { key: "dashboard", label: "POS Dashboard", icon: <MdDashboard />, to: "/dashboard/pos" },
 
       {
         key: "F&B",
         label: "F&B",
-        icon: "🧾",
+        icon: <MdRestaurant />,
         to: "/dashboard/pos/fnb",
         children: [
           {
@@ -40,78 +61,213 @@ export function PosSidebar() {
       },
 
       {
-        key: "tables",
-        label: "Tables",
-        icon: "🪑",
-        to: "/dashboard/pos/tables",
+        key: "HOUSE KEEPING",
+        label: "HOUSE KEEPING",
+        icon: <MdCleaningServices />,
+        to: "/dashboard/pos/HOUSEKEEPING",
         children: [
-          { label: "Table Status", to: "/dashboard/Pos/Tables/TableStatus" },
-          { label: "Merge / Split", to: "/dashboard/Pos/Tables/MergeSplit" },
-          { label: "Move Table", to: "/dashboard/Pos/Tables/MoveTable" },
+          {
+            label: "Laundry",
+            to: "/dashboard/Pos/Housekeeping/Laundry",
+            children: [
+              { label: "New Laundry", to: "/dashboard/Pos/Housekeeping/Laundry/New" },
+              { label: "Pending Laundry", to: "/dashboard/Pos/Housekeeping/Laundry/Pending" },
+              { label: "Completed Laundry", to: "/dashboard/Pos/Housekeeping/Laundry/Completed" },
+              { label: "Laundry Report", to: "/dashboard/Pos/Housekeeping/Laundry/Report" },
+            ],
+          },
         ],
       },
 
+
       {
-        key: "kitchen",
-        label: "Kitchen (KOT/KDS)",
-        icon: "👨‍🍳",
-        to: "/dashboard/pos/kitchen",
+        key: "BANQUET",
+        label: "BANQUET",
+        icon: <MdEventSeat />,
+        to: "/dashboard/pos/banquet",
         children: [
-          { label: "KOT Board", to: "/dashboard/Pos/Tables/KOTBoard" },
-          { label: "Reprint KOT", to: "/dashboard/Pos/Tables/ReprintKOT" },
-          { label: "KDS", to: "/dashboard/Pos/Tables/KDS" },
+          { label: "SwargTrustify", to: "/dashboard/pos/banquet/swargtrustify" },
         ],
       },
 
-      {
-        key: "billing",
-        label: "Billing",
-        icon: "💳",
-        to: "/dashboard/pos/billing",
-        children: [
-          { label: "Generate Bill", to: "/dashboard/Pos/Billing/GenerateBill" },
-          { label: "Reprint Bill", to: "/dashboard/Pos/Billing/ReprintBill" },
-          { label: "Void / Return", to: "/dashboard/Pos/Billing/VoidReturn" },
-        ],
-      },
 
       {
         key: "inventory",
         label: "Inventory",
-        icon: "📦",
+        icon: <MdInventory />,
         to: "/dashboard/pos/inventory",
         children: [
-          { label: "Items", to: "/dashboard/Pos/Inventory/Items" },
-          { label: "Stock In/Out", to: "/dashboard/Pos/Inventory/StockInOut" },
-          { label: "Out of Stock", to: "/dashboard/Pos/Inventory/OutofStock" },
+          {
+            label: "Issue Material Detail",
+            to: "/dashboard/pos/inventory/issue-material",
+          },
+          {
+            label: "Indent Details",
+            to: "/dashboard/pos/inventory/indent-details",
+          },
+          {
+            label: "Stock Manual Consumption Detail",
+            to: "/dashboard/pos/inventory/stock-manual-consumption",
+          },
+          {
+            label: "Stock Adjustment Detail",
+            to: "/dashboard/pos/inventory/stock-adjustment",
+          },
+          {
+            label: "Stock Transfer Detail",
+            to: "/dashboard/pos/inventory/stock-transfer",
+          },
+          {
+            label: "Department OP.Stock Detail",
+            to: "/dashboard/pos/inventory/department-op-stock",
+          },
+          {
+            label: "Stock Verification Detail",
+            to: "/dashboard/pos/inventory/stock-verification",
+          },
         ],
       },
 
       {
-        key: "reports",
-        label: "Reports",
-        icon: "📊",
-        to: "/dashboard/pos/reports",
+        key: "inventoryReport",
+        label: "Inventory Report",
+        icon: <MdAssessment />,
+        to: "/dashboard/pos/inventory-report",
         children: [
-          { label: "Z Report", to: "/dashboard/Pos/Reports/ZReport" },
-          { label: "Sales Summary", to: "/dashboard/Pos/Reports/SalesSummary" },
-          { label: "Tax Summary", to: "/dashboard/Pos/Reports/TaxSummary" },
-          { label: "Discount Report", to: "/dashboard/Pos/Reports/DiscountReport" },
-        ],
+          {
+            label: "Item Inventory Report",
+            to: "/dashboard/pos/inventory-report/item-inventory",
+          },
+          {
+            label: "Issue Transaction Report",
+            to: "/dashboard/pos/inventory-report/issue-transaction",
+          },
+          {
+            label: "Non Moving Item Report",
+            to: "/dashboard/pos/inventory-report/non-moving-item",
+          },
+          {
+            label: "Stock Manual Consumption Report",
+            to: "/dashboard/pos/inventory-report/stock-manual-consumption",
+          }
+        ]
+      },
+
+
+      {
+        key: "report",
+        label: "Report",
+        icon: <MdDescription />,
+        to: "/dashboard/pos/report",
+        children: [
+          {
+            label: "Tally Report",
+            to: "/dashboard/pos/report/tally",
+          },
+          {
+            label: "Bill Report",
+            to: "/dashboard/pos/report/bill",
+          },
+          {
+            label: "Fnb Summary Report",
+            to: "/dashboard/pos/report/fnb-summary",
+          },
+          {
+            label: "Order Summary Report",
+            to: "/dashboard/pos/report/order-summary",
+          }
+        ]
+      },
+
+
+      {
+        key: "banquet",
+        label: "Banquet",
+        icon: <MdReceipt />,
+        to: "/dashboard/pos/banquet",
+        children: [
+          {
+            label: "Banquet Booking Detail",
+            to: "/dashboard/pos/banquet/booking-detail",
+          },
+          {
+            label: "Banquet Calendar",
+            to: "/dashboard/pos/banquet/calendar",
+          },
+          {
+            label: "Banquet Tally Report",
+            to: "/dashboard/pos/banquet/tally-report",
+          }
+        ]
       },
 
       {
         key: "settings",
         label: "Settings",
-        icon: "⚙️",
+        icon: <MdSettings />,
         to: "/dashboard/pos/settings",
         children: [
-          { label: "Printers", to: "/dashboard/Pos/Settings/Printers" },
-          { label: "Counters", to: "/dashboard/Pos/Settings/Counters" },
-          { label: "Payment Modes", to: "/dashboard/Pos/Settings/PaymentModes" },
-          { label: "Service Charge", to: "/dashboard/Pos/Settings/ServiceCharge" },
-        ],
+          {
+            label: "Printer Settings",
+            to: "/dashboard/pos/settings/printer-settings",
+          },
+          {
+            label: "Printer exe",
+            to: "/dashboard/pos/settings/printer-exe",
+          },
+          {
+            label: "Financial Year",
+            to: "/dashboard/pos/settings/financial-year",
+          }
+        ]
       },
+
+      {
+        key: "purchase",
+        label: "Purchase",
+        icon: <MdShoppingCart />,
+        to: "/dashboard/pos/purchase",
+        children: [
+          {
+            label: "Category",
+            to: "/dashboard/pos/purchase/category",
+          },
+          {
+            label: "Sub Category",
+            to: "/dashboard/pos/purchase/sub-category",
+          },
+          {
+            label: "Item Master",
+            to: "/dashboard/pos/purchase/item-master",
+          },
+          {
+            label: "Purchase Details",
+            to: "/dashboard/pos/purchase/purchase-details",
+          },
+          {
+            label: "Purchase Challan",
+            to: "/dashboard/pos/purchase/purchase-challan",
+          },
+          {
+            label: "Purchase Order",
+            to: "/dashboard/pos/purchase/purchase-order",
+          },
+          {
+            label: "Purchase Transaction Report",
+            to: "/dashboard/pos/purchase/transaction-report",
+          },
+          {
+            label: "Add Supplier Detail",
+            to: "/dashboard/pos/purchase/add-supplier",
+          },
+          {
+            label: "Add Purchase Requisition Detail",
+            to: "/dashboard/pos/purchase/add-purchase-requisition",
+          }
+        ]
+      },
+
+
     ],
     []
   );
@@ -206,7 +362,7 @@ export function PosSidebar() {
           to="/dashboard/pos"
           className={"rsb-item" + (isDashboardActive ? " active" : "")}
         >
-          <span className="rsb-ico">🛒</span>
+          <span className="rsb-ico"><MdDashboard /></span>
           {!collapsed && <span className="rsb-lbl">POS Dashboard</span>}
         </NavLink>
 

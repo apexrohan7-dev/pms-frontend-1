@@ -232,6 +232,7 @@ import BookingSheetAccounts from "./pages/Reservation/BookingSheetAccounts";
   import TableStatus from "./pages/Pos/Tables/TableStatus";
   import MergeSplit from "./pages/Pos/Tables/MergeSplit";
   import MoveTable from "./pages/Pos/Tables/MoveTable";
+  import DownSendPage from "./pages/Pos/Restaurant/DownSend";
 
 
   //Pos-Kitchen
@@ -1211,6 +1212,17 @@ export default function App() {
         
         
         {/* Pos */}
+
+        
+         <Route
+          path="/dashboard/pos/restaurant/downsend"
+          element={
+            <ProtectedRoute>
+              <DownSendPage/>
+            </ProtectedRoute>
+          }
+        />
+       
         <Route
           path="/dashboard/Pos/OrderEntry"
           element={
