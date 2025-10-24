@@ -225,6 +225,13 @@ import BookingSheetAccounts from "./pages/Reservation/BookingSheetAccounts";
   import RunningOrders from "./pages/Pos/RunningOrders";
   import HoldUnpaid from "./pages/Pos/HoldUnpaid";
   import Cancelled from "./pages/Pos/Cancelled";
+  import Banquet from "./pages/Pos/Restaurant/Banquet";
+  import Bar from "./pages/Pos/Bar";
+  import RoomService from "./pages/Pos/RoomService";
+  import Laundry from "./pages/Pos/HOUSE KEEPING/Laundry"
+  import SwargTrustify from "./pages/Pos/Banquet/SwargTrustify"
+
+  
 
 
 
@@ -1222,7 +1229,47 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-       
+       <Route
+          path="/dashboard/pos/restaurant/banquet"
+          element={
+            <ProtectedRoute>
+              <Banquet/>
+            </ProtectedRoute>
+          }
+          />
+        <Route
+          path="/dashboard/pos/bar"
+          element={
+            <ProtectedRoute>
+              <Bar/>
+            </ProtectedRoute>
+          }
+           />
+
+         <Route
+          path="/dashboard/pos/roomservice"
+          element={
+            <ProtectedRoute>
+              <RoomService />
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="/dashboard/Pos/Housekeeping/Laundry"
+          element={
+            <ProtectedRoute>
+              <Laundry />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/pos/banquet/swargtrustify"
+          element={
+            <ProtectedRoute>
+              <SwargTrustify />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/dashboard/Pos/OrderEntry"
           element={

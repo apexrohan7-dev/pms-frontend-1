@@ -69,12 +69,7 @@ export function PosSidebar() {
           {
             label: "Laundry",
             to: "/dashboard/Pos/Housekeeping/Laundry",
-            children: [
-              { label: "New Laundry", to: "/dashboard/Pos/Housekeeping/Laundry/New" },
-              { label: "Pending Laundry", to: "/dashboard/Pos/Housekeeping/Laundry/Pending" },
-              { label: "Completed Laundry", to: "/dashboard/Pos/Housekeeping/Laundry/Completed" },
-              { label: "Laundry Report", to: "/dashboard/Pos/Housekeeping/Laundry/Report" },
-            ],
+           
           },
         ],
       },
