@@ -43,7 +43,7 @@ import OrderCancelTimeMaster from './pages/Backoffice/masters/OrderCancelTime';
 import BillNoSettingMaster from './pages/Backoffice/masters/BillNoSetting';
 import ReservationSettings from './pages/Backoffice/masters/ReservationSettings';
 import PinCode from './pages/Backoffice/masters/Pincode';
-import PropertyInformation from "./pages/Backoffice/masters/PropertyInformation";  
+import PropertyInformation from "./pages/Backoffice/masters/PropertyInformation";
 
 
 
@@ -181,107 +181,108 @@ import BookingSheetAccounts from "./pages/Reservation/BookingSheetAccounts";
 
 
 
-  //Reservation-Frontoffice
-  import PreRegCard from "./pages/Reservation/frontdesk/PreRegCard";
-  import CheckInGuest from "./pages/Reservation/frontdesk/CheckInGuest";
-  import DirectCheckInGuest from "./pages/Reservation/frontdesk/DirectCheckInGuest";
-  import CheckInGuestDetails from "./pages/Reservation/frontdesk/CheckInGuestDetails";
-  import PaxCheckin from "./pages/Reservation/frontdesk/PaxCheckin";
-  import CancelBookingDetails from "./pages/Reservation/frontdesk/CancelBookingDetails";
-  import RoomCalendar from "./pages/Reservation/frontdesk/RoomCalendar";
-  import LinkedUnlinkedReport from "./pages/Reservation/frontdesk/LinkedUnlinkedReport";
-  import CheckOutGuest from "./pages/Reservation/frontdesk/CheckOutGuest";
-  import Calendar from "./pages/Reservation/frontdesk/Calendar";
-  import GuestCheckoutExtend from "./pages/Reservation/frontdesk/GuestCheckoutExtend";
+//Reservation-Frontoffice
+import PreRegCard from "./pages/Reservation/frontdesk/PreRegCard";
+import CheckInGuest from "./pages/Reservation/frontdesk/CheckInGuest";
+import DirectCheckInGuest from "./pages/Reservation/frontdesk/DirectCheckInGuest";
+import CheckInGuestDetails from "./pages/Reservation/frontdesk/CheckInGuestDetails";
+import PaxCheckin from "./pages/Reservation/frontdesk/PaxCheckin";
+import CancelBookingDetails from "./pages/Reservation/frontdesk/CancelBookingDetails";
+import RoomCalendar from "./pages/Reservation/frontdesk/RoomCalendar";
+import LinkedUnlinkedReport from "./pages/Reservation/frontdesk/LinkedUnlinkedReport";
+import CheckOutGuest from "./pages/Reservation/frontdesk/CheckOutGuest";
+import Calendar from "./pages/Reservation/frontdesk/Calendar";
+import GuestCheckoutExtend from "./pages/Reservation/frontdesk/GuestCheckoutExtend";
 
 
 
 
-  //Housekeeping
-  import RoomStatusBoard from "./pages/Housekeeping/RoomStatusBoard";
-  import AssignTasks from "./pages/Housekeeping/AssignTasks";
-  import CleaningSchedule from "./pages/Housekeeping/CleaningSchedule";
-  import RoomInspection from "./pages/Housekeeping/RoomInspection"; 
-  import TurnDownService from "./pages/Housekeeping/TurnDownService";
-  import DeepCleaningPlanner from "./pages/Housekeeping/DeepCleaningPlanner";
-  import LostAndFound from "./pages/Housekeeping/LostAndFound";
-  import MaintenanceRequests from "./pages/Housekeeping/MaintenanceRequests";
-  import LinenInventory from "./pages/Housekeeping/LinenInventory";
-  import MinibarRefill from "./pages/Housekeeping/MinibarRefill";
+//Housekeeping
+import RoomStatusBoard from "./pages/Housekeeping/RoomStatusBoard";
+import AssignTasks from "./pages/Housekeeping/AssignTasks";
+import CleaningSchedule from "./pages/Housekeeping/CleaningSchedule";
+import RoomInspection from "./pages/Housekeeping/RoomInspection";
+import TurnDownService from "./pages/Housekeeping/TurnDownService";
+import DeepCleaningPlanner from "./pages/Housekeeping/DeepCleaningPlanner";
+import LostAndFound from "./pages/Housekeeping/LostAndFound";
+import MaintenanceRequests from "./pages/Housekeeping/MaintenanceRequests";
+import LinenInventory from "./pages/Housekeeping/LinenInventory";
+import MinibarRefill from "./pages/Housekeeping/MinibarRefill";
 
 
 
-  
-  //Housekeeping-Reports
-  import Productivity from "./pages/Housekeeping/Reports/Productivity";
-  import StatusHistory from "./pages/Housekeeping/Reports/StatusHistory";
-  import LostFoundLog from "./pages/Housekeeping/Reports/LostFoundLog";
-  import MaterialsUsage from "./pages/Housekeeping/Reports/MaterialsUsage";
 
-  
-
-  //Pos
-  import OrderEntry from "./pages/Pos/OrderEntry";
-  import RunningOrders from "./pages/Pos/RunningOrders";
-  import HoldUnpaid from "./pages/Pos/HoldUnpaid";
-  import Cancelled from "./pages/Pos/Cancelled";
-  import Banquet from "./pages/Pos/Restaurant/Banquet";
-  import Bar from "./pages/Pos/Bar";
-  import RoomService from "./pages/Pos/RoomService";
-  import Laundry from "./pages/Pos/HOUSE KEEPING/Laundry"
-  import SwargTrustify from "./pages/Pos/Banquet/SwargTrustify"
-
-  
+//Housekeeping-Reports
+import Productivity from "./pages/Housekeeping/Reports/Productivity";
+import StatusHistory from "./pages/Housekeeping/Reports/StatusHistory";
+import LostFoundLog from "./pages/Housekeeping/Reports/LostFoundLog";
+import MaterialsUsage from "./pages/Housekeeping/Reports/MaterialsUsage";
 
 
 
-   //Pos-Tables
-  import TableStatus from "./pages/Pos/Tables/TableStatus";
-  import MergeSplit from "./pages/Pos/Tables/MergeSplit";
-  import MoveTable from "./pages/Pos/Tables/MoveTable";
-  import DownSendPage from "./pages/Pos/Restaurant/DownSend";
-
-
-  //Pos-Kitchen
-  import KOTBoard from "./pages/Pos/Kitchen/KOTBoard";
-  import ReprintKOT from "./pages/Pos/Kitchen/ReprintKOT";
-  import KDS from "./pages/Pos/Kitchen/KDS";
-
-
-
-   //Pos-Billing
-   import GenerateBill from "./pages/Pos/Billing/GenerateBill";
-   import ReprintBill from "./pages/Pos/Billing/ReprintBill";
-   import VoidReturn from "./pages/Pos/Billing/VoidReturn";
+//Pos
+import OrderEntry from "./pages/Pos/OrderEntry";
+import RunningOrders from "./pages/Pos/RunningOrders";
+import HoldUnpaid from "./pages/Pos/HoldUnpaid";
+import Cancelled from "./pages/Pos/Cancelled";
+import Banquet from "./pages/Pos/Restaurant/Banquet";
+import Bar from "./pages/Pos/Bar";
+import RoomService from "./pages/Pos/RoomService";
+import Laundry from "./pages/Pos/HOUSE KEEPING/Laundry"
+import SwargTrustify from "./pages/Pos/Banquet/SwargTrustify"
 
 
 
-   //pos-Inventory
-   import Items from "./pages/Pos/Inventory/Items";
-   import StockInOut from "./pages/Pos/Inventory/StockInOut";
-   import OutofStock from "./pages/Pos/Inventory/OutofStock";
+
+
+//Pos-Tables
+import TableStatus from "./pages/Pos/Tables/TableStatus";
+import MergeSplit from "./pages/Pos/Tables/MergeSplit";
+import MoveTable from "./pages/Pos/Tables/MoveTable";
+import DownSendPage from "./pages/Pos/Restaurant/DownSend";
+
+
+//Pos-Kitchen
+import KOTBoard from "./pages/Pos/Kitchen/KOTBoard";
+import ReprintKOT from "./pages/Pos/Kitchen/ReprintKOT";
+import KDS from "./pages/Pos/Kitchen/KDS";
 
 
 
-   //pos-Reports
-   import ZReport from "./pages/Pos/Reports/ZReport";
-   import SalesSummary from "./pages/Pos/Reports/SalesSummary";
-   import TaxSummary from "./pages/Pos/Reports/TaxSummary";
-   import DiscountReport from "./pages/Pos/Reports/DiscountReport";
+//Pos-Billing
+import GenerateBill from "./pages/Pos/Billing/GenerateBill";
+import ReprintBill from "./pages/Pos/Billing/ReprintBill";
+import VoidReturn from "./pages/Pos/Billing/VoidReturn";
 
 
 
-   //pos-Settings
-   import Printers from "./pages/Pos/Settings/Printers";
-   import Counters from "./pages/Pos/Settings/Counters";
-   import PaymentModes from "./pages/Pos/Settings/PaymentModes";
-   import ServiceCharge from "./pages/Pos/Settings/ServiceCharge";
+//pos-Inventory
+import InventoryIssue from "./pages/Pos/Inventory/InventoryIssue";
+import InventoryIndent from "./pages/Pos/Inventory/InventoryIndent";
+import InventoryStockConsumption from "./pages/Pos/Inventory/InventoryStockConsumption";
+import InventoryStockAdjust from "./pages/Pos/Inventory/InventoryStockAdjust";
+import InventoryStockTransfer from './pages/Pos/Inventory/InventorystockTransfer';
+
+
+//pos-Reports
+import ZReport from "./pages/Pos/Reports/ZReport";
+import SalesSummary from "./pages/Pos/Reports/SalesSummary";
+import TaxSummary from "./pages/Pos/Reports/TaxSummary";
+import DiscountReport from "./pages/Pos/Reports/DiscountReport";
 
 
 
-   
-   
-   
+//pos-Settings
+import Printers from "./pages/Pos/Settings/Printers";
+import Counters from "./pages/Pos/Settings/Counters";
+import PaymentModes from "./pages/Pos/Settings/PaymentModes";
+import ServiceCharge from "./pages/Pos/Settings/ServiceCharge";
+
+
+
+
+
+
 
 
 
@@ -381,7 +382,7 @@ export default function App() {
           }
         />
 
-        
+
 
         {/* Backoffice -> Property */}
         <Route
@@ -471,10 +472,10 @@ export default function App() {
           element={<ProtectedRoute><CityMaster /></ProtectedRoute>}
         />
 
-       <Route
-  path="/dashboard/backoffice/masters/area"
-  element={<ProtectedRoute><AreaMaster /></ProtectedRoute>}
-/>
+        <Route
+          path="/dashboard/backoffice/masters/area"
+          element={<ProtectedRoute><AreaMaster /></ProtectedRoute>}
+        />
 
         <Route
           path="/dashboard/backoffice/masters/zone"
@@ -485,24 +486,24 @@ export default function App() {
           path="/dashboard/backoffice/masters/tax-rate-name"
           element={<ProtectedRoute><TaxRateName /></ProtectedRoute>}
         />
-        
+
         <Route
-  path="/dashboard/backoffice/masters/tax-slab"
-  element={<ProtectedRoute><TaxSlabMaster /></ProtectedRoute>}
-/>
+          path="/dashboard/backoffice/masters/tax-slab"
+          element={<ProtectedRoute><TaxSlabMaster /></ProtectedRoute>}
+        />
         <Route
-  path="/dashboard/backoffice/masters/tax-process"
-  element={<ProtectedRoute><TaxProcessMaster /></ProtectedRoute>}
-/>
-         <Route
-  path="/dashboard/backoffice/masters/order-cancel-time"
-  element={
-    <ProtectedRoute>
-      <OrderCancelTimeMaster />
-    </ProtectedRoute>
-  }
-/>
-      <Route
+          path="/dashboard/backoffice/masters/tax-process"
+          element={<ProtectedRoute><TaxProcessMaster /></ProtectedRoute>}
+        />
+        <Route
+          path="/dashboard/backoffice/masters/order-cancel-time"
+          element={
+            <ProtectedRoute>
+              <OrderCancelTimeMaster />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/dashboard/backoffice/masters/bill-no-setting"
           element={
             <ProtectedRoute>
@@ -510,8 +511,8 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        
-        
+
+
         <Route
           path="/dashboard/backoffice/masters/reservation-settings"
           element={
@@ -520,8 +521,8 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        
-        
+
+
         <Route
           path="/dashboard/backoffice/masters/pincode"
           element={
@@ -530,15 +531,15 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-         
-         <Route
-  path="/dashboard/backoffice/masters/property-information"
-  element={
-    <ProtectedRoute>
-      <PropertyInformation />
-    </ProtectedRoute>
-  }
-/>
+
+        <Route
+          path="/dashboard/backoffice/masters/property-information"
+          element={
+            <ProtectedRoute>
+              <PropertyInformation />
+            </ProtectedRoute>
+          }
+        />
 
 
         {/* Settings */}
@@ -547,8 +548,8 @@ export default function App() {
           element={<ProtectedRoute><NightAuditSetting /></ProtectedRoute>}
         />
 
-        
-        
+
+
         <Route
           path="/dashboard/backoffice/setting/Commonsetting"
           element={<ProtectedRoute><CommonSetting /></ProtectedRoute>}
@@ -560,97 +561,97 @@ export default function App() {
           element={<ProtectedRoute><Bookingnositting /></ProtectedRoute>}
         />
 
-        
+
         <Route
           path="/dashboard/backoffice/setting/Copytablecoloumcrm"
-          element={<ProtectedRoute><CopyTableColumnCRM/></ProtectedRoute>}
+          element={<ProtectedRoute><CopyTableColumnCRM /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/setting/STableColumnListCRM"
-          element={<ProtectedRoute><TableColumnListCRM/></ProtectedRoute>}
+          element={<ProtectedRoute><TableColumnListCRM /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/setting/StoreSerialNoSetting"
-          element={<ProtectedRoute><StoreSerialNoSetting/></ProtectedRoute>}
+          element={<ProtectedRoute><StoreSerialNoSetting /></ProtectedRoute>}
         />
 
 
         {/* Commonmaster */}
         <Route
           path="/dashboard/backoffice/CommonMaster/Unit"
-          element={<ProtectedRoute><UnitPage/></ProtectedRoute>}
+          element={<ProtectedRoute><UnitPage /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/CommonMaster/Subunit"
-          element={<ProtectedRoute><SubUnitPage/></ProtectedRoute>}
+          element={<ProtectedRoute><SubUnitPage /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/CommonMaster/FnbBillingType"
-          element={<ProtectedRoute><FnbBillingTypePage/></ProtectedRoute>}
+          element={<ProtectedRoute><FnbBillingTypePage /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/CommonMaster/Currency"
-          element={<ProtectedRoute><CurrencyPage/></ProtectedRoute>}
+          element={<ProtectedRoute><CurrencyPage /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/CommonMaster/GuestType"
-          element={<ProtectedRoute><GuestTypePage/></ProtectedRoute>}
+          element={<ProtectedRoute><GuestTypePage /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/CommonMaster/Brand"
-          element={<ProtectedRoute><BrandPage/></ProtectedRoute>}
+          element={<ProtectedRoute><BrandPage /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/CommonMaster/Deals"
-          element={<ProtectedRoute><DealsPage/></ProtectedRoute>}
+          element={<ProtectedRoute><DealsPage /></ProtectedRoute>}
         />
 
-        
+
         <Route
           path="/dashboard/backoffice/CommonMaster/VoidReasons"
-          element={<ProtectedRoute><VoidReasonsPage/></ProtectedRoute>}
+          element={<ProtectedRoute><VoidReasonsPage /></ProtectedRoute>}
         />
 
-         
+
         <Route
           path="/dashboard/backoffice/CommonMaster/KotBookManual"
-          element={<ProtectedRoute><KotBookManualPage/></ProtectedRoute>}
+          element={<ProtectedRoute><KotBookManualPage /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/CommonMaster/PrinterSet"
-          element={<ProtectedRoute><PrinterSetPage/></ProtectedRoute>}
+          element={<ProtectedRoute><PrinterSetPage /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/CommonMaster/VegType"
-          element={<ProtectedRoute><VegTypePage/></ProtectedRoute>}
+          element={<ProtectedRoute><VegTypePage /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/CommonMaster/EmailerCreation"
-          element={<ProtectedRoute><EmailerCreationPage/></ProtectedRoute>}
+          element={<ProtectedRoute><EmailerCreationPage /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/CommonMaster/EmailSetting"
-          element={<ProtectedRoute><EmailSettingPage/></ProtectedRoute>}
+          element={<ProtectedRoute><EmailSettingPage /></ProtectedRoute>}
         />
 
 
 
-         {/* QRMaster */}
-         <Route
+        {/* QRMaster */}
+        <Route
           path="/dashboard/backoffice/QRMaster/QRMenuSetting"
-          element={<ProtectedRoute><QRMenuSettingPage/></ProtectedRoute>}
+          element={<ProtectedRoute><QRMenuSettingPage /></ProtectedRoute>}
         />
 
 
@@ -658,153 +659,153 @@ export default function App() {
         {/* FNB */}
         <Route
           path="/dashboard/backoffice/fnb/AddPosCustomerSetting"
-          element={<ProtectedRoute><AddPosCustomerSetting/></ProtectedRoute>}
+          element={<ProtectedRoute><AddPosCustomerSetting /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/fnb/CoponMaster"
-          element={<ProtectedRoute><CouponMaster/></ProtectedRoute>}
+          element={<ProtectedRoute><CouponMaster /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/fnb/Outlet"
-          element={<ProtectedRoute><Outlet/></ProtectedRoute>}
+          element={<ProtectedRoute><Outlet /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/fnb/Table"
-          element={<ProtectedRoute><TablePage/></ProtectedRoute>}
+          element={<ProtectedRoute><TablePage /></ProtectedRoute>}
         />
 
-        
+
         <Route
           path="/dashboard/backoffice/fnb/ParentCategoryPage"
-          element={<ProtectedRoute><ParentCategoryPage/></ProtectedRoute>}
+          element={<ProtectedRoute><ParentCategoryPage /></ProtectedRoute>}
         />
 
-         
+
         <Route
           path="/dashboard/backoffice/fnb/Category"
-          element={<ProtectedRoute><CategoryPage/></ProtectedRoute>}
+          element={<ProtectedRoute><CategoryPage /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/fnb/MenuGroup"
-          element={<ProtectedRoute><MenuGroupPage/></ProtectedRoute>}
+          element={<ProtectedRoute><MenuGroupPage /></ProtectedRoute>}
         />
 
-        
+
         <Route
           path="/dashboard/backoffice/fnb/Item"
-          element={<ProtectedRoute><ItemPage/></ProtectedRoute>}
+          element={<ProtectedRoute><ItemPage /></ProtectedRoute>}
         />
 
-         
+
         <Route
           path="/dashboard/backoffice/fnb/AddItemToOutlet"
-          element={<ProtectedRoute><AddItemToOutletPage/></ProtectedRoute>}
+          element={<ProtectedRoute><AddItemToOutletPage /></ProtectedRoute>}
         />
 
-         
+
         <Route
           path="/dashboard/backoffice/fnb/OutOfStock"
-          element={<ProtectedRoute><OutOfStock/></ProtectedRoute>}
+          element={<ProtectedRoute><OutOfStock /></ProtectedRoute>}
         />
 
 
         <Route
           path="/dashboard/backoffice/fnb/AddKitchen"
-          element={<ProtectedRoute><AddKitchen/></ProtectedRoute>}
+          element={<ProtectedRoute><AddKitchen /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/fnb/KitchenTransferOutlet"
-          element={<ProtectedRoute><KitchenTransferOutlet/></ProtectedRoute>}
+          element={<ProtectedRoute><KitchenTransferOutlet /></ProtectedRoute>}
         />
 
-        
+
         <Route
           path="/dashboard/backoffice/fnb/BanquetGroup"
-          element={<ProtectedRoute><BanquetGroup/></ProtectedRoute>}
+          element={<ProtectedRoute><BanquetGroup /></ProtectedRoute>}
         />
 
 
 
 
-         {/* Room\Room */}
-           
+        {/* Room\Room */}
+
         <Route
           path="/dashboard/backoffice/room/TaxRange"
-          element={<ProtectedRoute><TaxRange/></ProtectedRoute>}
+          element={<ProtectedRoute><TaxRange /></ProtectedRoute>}
         />
 
-            
+
         <Route
           path="/dashboard/backoffice/room/ReservationCancelSetting"
-          element={<ProtectedRoute><ReservationCancelSetting/></ProtectedRoute>}
+          element={<ProtectedRoute><ReservationCancelSetting /></ProtectedRoute>}
         />
 
-            
+
         <Route
           path="/dashboard/backoffice/room/FloorMaster"
-          element={<ProtectedRoute><FloorMaster/></ProtectedRoute>}
+          element={<ProtectedRoute><FloorMaster /></ProtectedRoute>}
         />
 
-             
+
         <Route
           path="/dashboard/backoffice/room/RoomViewType"
-          element={<ProtectedRoute><RoomViewType/></ProtectedRoute>}
+          element={<ProtectedRoute><RoomViewType /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/room/BedSize"
-          element={<ProtectedRoute><BedSize/></ProtectedRoute>}
+          element={<ProtectedRoute><BedSize /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/room/AmenityCategory"
-          element={<ProtectedRoute><AmenityCategory/></ProtectedRoute>}
+          element={<ProtectedRoute><AmenityCategory /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/room/AmenitySubCategory"
-          element={<ProtectedRoute><AmenitySubcategory/></ProtectedRoute>}
+          element={<ProtectedRoute><AmenitySubcategory /></ProtectedRoute>}
         />
 
-        
+
         <Route
           path="/dashboard/backoffice/room/RoomCategory"
-          element={<ProtectedRoute><RoomCategory/></ProtectedRoute>}
+          element={<ProtectedRoute><RoomCategory /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/room/RoomPlanType"
-          element={<ProtectedRoute><RoomPlanType/></ProtectedRoute>}
+          element={<ProtectedRoute><RoomPlanType /></ProtectedRoute>}
         />
 
-        
+
         <Route
           path="/dashboard/backoffice/room/RoomType"
-          element={<ProtectedRoute><RoomType/></ProtectedRoute>}
+          element={<ProtectedRoute><RoomType /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/room/RoomNoMaster"
-          element={<ProtectedRoute><RoomNoMaster/></ProtectedRoute>}
+          element={<ProtectedRoute><RoomNoMaster /></ProtectedRoute>}
         />
 
 
 
-        
-         {/* Currency */}
-         <Route
+
+        {/* Currency */}
+        <Route
           path="/dashboard/backoffice/currency/Setup"
-          element={<ProtectedRoute><CurrencySetup/></ProtectedRoute>}
+          element={<ProtectedRoute><CurrencySetup /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/currency/Exchange"
-          element={<ProtectedRoute><CurrencyExchange/></ProtectedRoute>}
+          element={<ProtectedRoute><CurrencyExchange /></ProtectedRoute>}
         />
 
 
@@ -812,27 +813,27 @@ export default function App() {
         {/* Nc */}
         <Route
           path="/dashboard/backoffice/nc/NcCosting"
-          element={<ProtectedRoute><NcCosting/></ProtectedRoute>}
+          element={<ProtectedRoute><NcCosting /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/nc/Department"
-          element={<ProtectedRoute><Department/></ProtectedRoute>}
+          element={<ProtectedRoute><Department /></ProtectedRoute>}
         />
 
 
 
         {/* Report */}
-        
+
         <Route
           path="/dashboard/backoffice/report/UserList"
-          element={<ProtectedRoute><UserList/></ProtectedRoute>}
+          element={<ProtectedRoute><UserList /></ProtectedRoute>}
         />
 
 
         <Route
           path="/dashboard/backoffice/report/FeedbackList"
-          element={<ProtectedRoute><FeedbackList/></ProtectedRoute>}
+          element={<ProtectedRoute><FeedbackList /></ProtectedRoute>}
         />
 
 
@@ -840,84 +841,84 @@ export default function App() {
 
 
 
-         {/* Complain */}
-         <Route
+        {/* Complain */}
+        <Route
           path="/dashboard/backoffice/complain/ComplainType"
-          element={<ProtectedRoute><ComplainType/></ProtectedRoute>}
+          element={<ProtectedRoute><ComplainType /></ProtectedRoute>}
         />
 
 
         <Route
           path="/dashboard/backoffice/complain/ComplainUserList"
-          element={<ProtectedRoute><ComplainUserList/></ProtectedRoute>}
+          element={<ProtectedRoute><ComplainUserList /></ProtectedRoute>}
         />
 
 
 
 
-         {/* Production */}
-         <Route
+        {/* Production */}
+        <Route
           path="/dashboard/backoffice/production/ProductionFinish"
-          element={<ProtectedRoute><ProductionFinish/></ProtectedRoute>}
+          element={<ProtectedRoute><ProductionFinish /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/production/AddProduction"
-          element={<ProtectedRoute><AddProduction/></ProtectedRoute>}
+          element={<ProtectedRoute><AddProduction /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/production/ProductionProcess"
-          element={<ProtectedRoute><ProductionProcess/></ProtectedRoute>}
+          element={<ProtectedRoute><ProductionProcess /></ProtectedRoute>}
         />
 
 
 
 
 
-         {/* Accounts */}
-         <Route
+        {/* Accounts */}
+        <Route
           path="/dashboard/backoffice/accounts/LedgerExport"
-          element={<ProtectedRoute><LedgerExportPage/></ProtectedRoute>}
+          element={<ProtectedRoute><LedgerExportPage /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/accounts/VoucherExport"
-          element={<ProtectedRoute><VoucherExportPage/></ProtectedRoute>}
+          element={<ProtectedRoute><VoucherExportPage /></ProtectedRoute>}
         />
 
         <Route
           path="/dashboard/backoffice/accounts/UploadEinvoice"
-          element={<ProtectedRoute><UploadEinvoicePage/></ProtectedRoute>}
+          element={<ProtectedRoute><UploadEinvoicePage /></ProtectedRoute>}
         />
 
 
 
 
 
-         {/* Membership */}
-         
+        {/* Membership */}
+
         <Route
           path="/dashboard/backoffice/membership/MemberShipType"
-          element={<ProtectedRoute><MemberShipType/></ProtectedRoute>}
+          element={<ProtectedRoute><MemberShipType /></ProtectedRoute>}
         />
 
-          
+
         <Route
           path="/dashboard/backoffice/membership/MemberShipService"
-          element={<ProtectedRoute><MemberShipService/></ProtectedRoute>}
+          element={<ProtectedRoute><MemberShipService /></ProtectedRoute>}
         />
 
-          
+
         <Route
           path="/dashboard/backoffice/membership/MemberShipPlan"
-          element={<ProtectedRoute><MemberShipPlan/></ProtectedRoute>}
+          element={<ProtectedRoute><MemberShipPlan /></ProtectedRoute>}
         />
 
-           
+
         <Route
           path="/dashboard/backoffice/membership/MemberShipSetting"
-          element={<ProtectedRoute><MemberShipSetting/></ProtectedRoute>}
+          element={<ProtectedRoute><MemberShipSetting /></ProtectedRoute>}
         />
 
         {/* <Route
@@ -928,7 +929,7 @@ export default function App() {
 
 
 
-        
+
         {/* Reservation flows */}
         <Route
           path="/reservation/new"
@@ -946,7 +947,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/reservation/StatusView"
           element={
             <ProtectedRoute>
@@ -954,7 +955,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/reservation/CancelReservationList"
           element={
             <ProtectedRoute>
@@ -962,7 +963,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/reservation/ReservationCalendar"
           element={
             <ProtectedRoute>
@@ -1004,7 +1005,7 @@ export default function App() {
         />
 
 
-   
+
         {/* Frontoffice */}
         <Route
           path="/Reservation/frontoffice/PreRegCard"
@@ -1070,7 +1071,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/Reservation/frontoffice/CheckOutGuest"
           element={
             <ProtectedRoute>
@@ -1097,8 +1098,8 @@ export default function App() {
 
 
 
-         {/* Housekeeping */}
-         <Route
+        {/* Housekeeping */}
+        <Route
           path="/dashboard/Housekeeping/RoomStatusBoard"
           element={
             <ProtectedRoute>
@@ -1106,7 +1107,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/dashboard/Housekeeping/AssignTasks"
           element={
             <ProtectedRoute>
@@ -1130,7 +1131,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/dashboard/Housekeeping/TurnDownService"
           element={
             <ProtectedRoute>
@@ -1138,7 +1139,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/dashboard/Housekeeping/DeepCleaningPlanner"
           element={
             <ProtectedRoute>
@@ -1162,7 +1163,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/dashboard/Housekeeping/LinenInventory"
           element={
             <ProtectedRoute>
@@ -1198,7 +1199,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/dashboard/Housekeeping/Reports/LostFoundLog"
           element={
             <ProtectedRoute>
@@ -1206,7 +1207,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/dashboard/Housekeeping/Reports/MaterialsUsage"
           element={
             <ProtectedRoute>
@@ -1216,37 +1217,37 @@ export default function App() {
         />
 
 
-        
-        
+
+
         {/* Pos */}
 
-        
-         <Route
+
+        <Route
           path="/dashboard/pos/restaurant/downsend"
           element={
             <ProtectedRoute>
-              <DownSendPage/>
+              <DownSendPage />
             </ProtectedRoute>
           }
         />
-       <Route
+        <Route
           path="/dashboard/pos/restaurant/banquet"
           element={
             <ProtectedRoute>
-              <Banquet/>
+              <Banquet />
             </ProtectedRoute>
           }
-          />
+        />
         <Route
           path="/dashboard/pos/bar"
           element={
             <ProtectedRoute>
-              <Bar/>
+              <Bar />
             </ProtectedRoute>
           }
-           />
+        />
 
-         <Route
+        <Route
           path="/dashboard/pos/roomservice"
           element={
             <ProtectedRoute>
@@ -1254,7 +1255,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/dashboard/Pos/Housekeeping/Laundry"
           element={
             <ProtectedRoute>
@@ -1285,216 +1286,233 @@ export default function App() {
               <RunningOrders />
             </ProtectedRoute>
           }
-          />
-          <Route
+        />
+        <Route
           path="/dashboard/Pos/HoldUnpaid"
           element={
             <ProtectedRoute>
               <HoldUnpaid />
             </ProtectedRoute>
           }
-          />
-          <Route
+        />
+        <Route
           path="/dashboard/Pos/Cancelled"
           element={
             <ProtectedRoute>
               <Cancelled />
             </ProtectedRoute>
           }
-          />
+        />
 
 
-        
-         {/* Tables */}
-         <Route
+
+        {/* Tables */}
+        <Route
           path="/dashboard/Pos/Tables/TableStatus"
           element={
             <ProtectedRoute>
               <TableStatus />
             </ProtectedRoute>
           }
-          />
-          <Route
+        />
+        <Route
           path="/dashboard/Pos/Tables/MergeSplit"
           element={
             <ProtectedRoute>
               <MergeSplit />
             </ProtectedRoute>
           }
-          />
-          <Route
+        />
+        <Route
           path="/dashboard/Pos/Tables/MoveTable"
           element={
             <ProtectedRoute>
               <MoveTable />
             </ProtectedRoute>
           }
-          />
-        
-        
+        />
 
-         {/* Kitchen */} 
-         <Route
+
+
+        {/* Kitchen */}
+        <Route
           path="/dashboard/Pos/Tables/KOTBoard"
           element={
             <ProtectedRoute>
               <KOTBoard />
             </ProtectedRoute>
           }
-          />
-           <Route
+        />
+        <Route
           path="/dashboard/Pos/Tables/ReprintKOT"
           element={
             <ProtectedRoute>
               <ReprintKOT />
             </ProtectedRoute>
           }
-          />
-          <Route
+        />
+        <Route
           path="/dashboard/Pos/Tables/KDS"
           element={
             <ProtectedRoute>
               <KDS />
             </ProtectedRoute>
           }
-          />
-         
-         
-         
-         {/* Billing */} 
-         <Route
+        />
+
+
+
+        {/* Billing */}
+        <Route
           path="/dashboard/Pos/Billing/GenerateBill"
           element={
             <ProtectedRoute>
               <GenerateBill />
             </ProtectedRoute>
           }
-          />
-          <Route
+        />
+        <Route
           path="/dashboard/Pos/Billing/ReprintBill"
           element={
             <ProtectedRoute>
               <ReprintBill />
             </ProtectedRoute>
           }
-          />
-          <Route
+        />
+        <Route
           path="/dashboard/Pos/Billing/VoidReturn"
           element={
             <ProtectedRoute>
               <VoidReturn />
             </ProtectedRoute>
           }
-          />
+        />
 
 
 
-          {/* Inventory */} 
-          <Route
-          path="/dashboard/Pos/Inventory/Items"
+        {/* Inventory */}
+        <Route
+          path="/dashboard/pos/inventory/issue-material"
           element={
             <ProtectedRoute>
-              <Items />
+              <InventoryIssue />
             </ProtectedRoute>
           }
-          />
-          <Route
-          path="/dashboard/Pos/Inventory/StockInOut"
+        />
+        <Route
+          path="/dashboard/pos/inventory/indent-details"
           element={
             <ProtectedRoute>
-              <StockInOut />
+              <InventoryIndent />
             </ProtectedRoute>
           }
-          />
-          <Route
-          path="/dashboard/Pos/Inventory/OutofStock"
+        />
+        <Route
+          path="/dashboard/pos/inventory/stock-manual-consumption"
           element={
             <ProtectedRoute>
-              <OutOfStock />
+              <InventoryStockConsumption />
             </ProtectedRoute>
           }
-          />
+        />
+        <Route
+          path="/dashboard/pos/inventory/stock-adjustment"
+          element={
+            <ProtectedRoute>
+              <InventoryStockAdjust />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/pos/inventory/stock-transfer"
+          element={
+            <ProtectedRoute>
+              <InventoryStockTransfer />
+            </ProtectedRoute>
+          }
+        />
 
 
-         {/* Reports */} 
-         <Route
+
+        {/* Reports */}
+        <Route
           path="/dashboard/Pos/Reports/ZReport"
           element={
             <ProtectedRoute>
               <ZReport />
             </ProtectedRoute>
           }
-          />
-          <Route
+        />
+        <Route
           path="/dashboard/Pos/Reports/SalesSummary"
           element={
             <ProtectedRoute>
               <SalesSummary />
             </ProtectedRoute>
           }
-          />
-          <Route
+        />
+        <Route
           path="/dashboard/Pos/Reports/TaxSummary"
           element={
             <ProtectedRoute>
               <TaxSummary />
             </ProtectedRoute>
           }
-          />
-          <Route
+        />
+        <Route
           path="/dashboard/Pos/Reports/DiscountReport"
           element={
             <ProtectedRoute>
               <DiscountReport />
             </ProtectedRoute>
           }
-          />
+        />
 
 
 
-        
 
-         {/* Settings */} 
-         <Route
+
+        {/* Settings */}
+        <Route
           path="/dashboard/Pos/Settings/Printers"
           element={
             <ProtectedRoute>
               <Printers />
             </ProtectedRoute>
           }
-          />
-           <Route
+        />
+        <Route
           path="/dashboard/Pos/Settings/Counters"
           element={
             <ProtectedRoute>
               <Counters />
             </ProtectedRoute>
           }
-          />
-           <Route
+        />
+        <Route
           path="/dashboard/Pos/Settings/PaymentModes"
           element={
             <ProtectedRoute>
               <PaymentModes />
             </ProtectedRoute>
           }
-          />
-           <Route
+        />
+        <Route
           path="/dashboard/Pos/Settings/ServiceCharge"
           element={
             <ProtectedRoute>
               <ServiceCharge />
             </ProtectedRoute>
           }
-          />
+        />
 
 
 
 
 
 
-        
-      
+
+
 
 
 
