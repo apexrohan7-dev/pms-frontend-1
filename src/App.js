@@ -262,13 +262,27 @@ import InventoryIndent from "./pages/Pos/Inventory/InventoryIndent";
 import InventoryStockConsumption from "./pages/Pos/Inventory/InventoryStockConsumption";
 import InventoryStockAdjust from "./pages/Pos/Inventory/InventoryStockAdjust";
 import InventoryStockTransfer from './pages/Pos/Inventory/InventorystockTransfer';
+import InventoryStockDeatail from "./pages/Pos/Inventory/InventoryStockDeatail";
+import InventoryVerificationDeatail from "./pages/Pos/Inventory/InventoryVerificationDeatail"
+
+//pos-InventoryReports
+import ItemIventoryReport from "./pages/Pos/InventoryReport/ItemIventoryReport";
+import ItemTransactionReport from "./pages/Pos/InventoryReport/ItemTransactionReport";
+import NonMovingItemReport from "./pages/Pos/InventoryReport/NonMovingItemReport";
+import StockManualReport from "./pages/Pos/InventoryReport/StockManualReport";
 
 
-//pos-Reports
-import ZReport from "./pages/Pos/Reports/ZReport";
-import SalesSummary from "./pages/Pos/Reports/SalesSummary";
-import TaxSummary from "./pages/Pos/Reports/TaxSummary";
-import DiscountReport from "./pages/Pos/Reports/DiscountReport";
+
+//remove this inventory
+import TallyReport from "./pages/Pos/Reports/TallyReport";
+import BillReport from "./pages/Pos/Reports/BillReport";
+import FnbSummaryReport from "./pages/Pos/Reports/FnbSummaryReport"
+import OrderSummaryReport from "./pages/Pos/Reports/OrderSummaryReport"
+
+//Banquet Hall
+import BanquetBookingDeatail from "./pages/Pos/Banquet/BanquetBookingDeatail";
+import BanquetCalendar from "./pages/Pos/Banquet/BanquetCalendar";
+import BanquetTallyReport from "./pages/Pos/Banquet/BanquetTallyReport";
 
 
 
@@ -1431,43 +1445,123 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/dashboard/pos/inventory/department-op-stock"
+          element={
+            <ProtectedRoute>
+              <InventoryStockDeatail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/pos/inventory/stock-verification"
+          element={
+            <ProtectedRoute>
+              <InventoryVerificationDeatail />
+            </ProtectedRoute>
+          }
+        />
+
+
+
 
 
 
         {/* Reports */}
-        <Route
-          path="/dashboard/Pos/Reports/ZReport"
+         <Route
+          path="/dashboard/pos/inventory-report/item-inventory"
           element={
             <ProtectedRoute>
-              <ZReport />
+              < ItemIventoryReport/>
             </ProtectedRoute>
           }
         />
         <Route
-          path="/dashboard/Pos/Reports/SalesSummary"
+          path="/dashboard/pos/inventory-report/issue-transaction"
           element={
             <ProtectedRoute>
-              <SalesSummary />
+              < ItemTransactionReport/>
             </ProtectedRoute>
           }
         />
         <Route
-          path="/dashboard/Pos/Reports/TaxSummary"
+          path="/dashboard/pos/inventory-report/non-moving-item"
           element={
             <ProtectedRoute>
-              <TaxSummary />
+              < NonMovingItemReport/>
             </ProtectedRoute>
           }
         />
         <Route
-          path="/dashboard/Pos/Reports/DiscountReport"
+          path="/dashboard/pos/inventory-report/stock-manual-consumption"
           element={
             <ProtectedRoute>
-              <DiscountReport />
+              < StockManualReport/>
             </ProtectedRoute>
           }
         />
 
+
+
+      
+        <Route
+          path="/dashboard/pos/report/tally"
+          element={
+            <ProtectedRoute>
+              < TallyReport />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/pos/report/bill"
+          element={
+            <ProtectedRoute>
+              < BillReport />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/pos/report/fnb-summary"
+          element={
+            <ProtectedRoute>
+              <FnbSummaryReport />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/pos/report/order-summary"
+          element={
+            <ProtectedRoute>
+              <OrderSummaryReport />
+            </ProtectedRoute>
+          }
+        />
+       
+      {/* Banquet Hall */}
+      <Route
+          path="/dashboard/pos/banquet/booking-detail"
+          element={
+            <ProtectedRoute>
+              <BanquetBookingDeatail/>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/pos/banquet/calendar"
+          element={
+            <ProtectedRoute>
+              <BanquetCalendar/>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/pos/banquet/tally-report"
+          element={
+            <ProtectedRoute>
+              <BanquetTallyReport/>
+            </ProtectedRoute>
+          }
+        />
 
 
 
