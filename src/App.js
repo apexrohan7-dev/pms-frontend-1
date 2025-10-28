@@ -287,15 +287,22 @@ import BanquetTallyReport from "./pages/Pos/Banquet/BanquetTallyReport";
 
 
 //pos-Settings
-import Printers from "./pages/Pos/Settings/Printers";
-import Counters from "./pages/Pos/Settings/Counters";
+import PrinterSetting from "./pages/Pos/Settings/PrinterSettings";
+import FinancialYear from "./pages/Pos/Settings/FinancialYear";
 import PaymentModes from "./pages/Pos/Settings/PaymentModes";
 import ServiceCharge from "./pages/Pos/Settings/ServiceCharge";
 
 
-
-
-
+//Pos-Purchase
+import Category from "./pages/Pos/Purchase/Category";
+import SubCategory from "./pages/Pos/Purchase/SubCategory";
+import ItemMaster from "./pages/Pos/Purchase/ItemMaster";
+import PurchaseDeatail from "./pages/Pos/Purchase/PurchaseDeatail";
+import PurchaseChallan from "./pages/Pos/Purchase/PurchaseChallan";
+import PurchaseOrder from "./pages/Pos/Purchase/PurchaseOrder"
+import PurchaseTransactionReport from "./pages/Pos/Purchase/PurchaseTransactionReport";
+import AddSupplier from "./pages/Pos/Purchase/AddSupplier";
+import PurchaseRequisition from "./pages/Pos/Purchase/PurchaseRequisition";
 
 
 
@@ -1568,18 +1575,18 @@ export default function App() {
 
         {/* Settings */}
         <Route
-          path="/dashboard/Pos/Settings/Printers"
+          path="/dashboard/pos/settings/printer-settings"
           element={
             <ProtectedRoute>
-              <Printers />
+              <PrinterSetting />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/dashboard/Pos/Settings/Counters"
+          path="/dashboard/pos/settings/financial-year"
           element={
             <ProtectedRoute>
-              <Counters />
+              <FinancialYear />
             </ProtectedRoute>
           }
         />
@@ -1599,6 +1606,83 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+
+
+         {/* Purchase*/}
+        <Route
+          path="/dashboard/pos/purchase/category"
+          element={
+            <ProtectedRoute>
+              <Category />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/pos/purchase/sub-category"
+          element={
+            <ProtectedRoute>
+              <SubCategory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/pos/purchase/item-master"
+          element={
+            <ProtectedRoute>
+              <ItemMaster />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/pos/purchase/purchase-details"
+          element={
+            <ProtectedRoute>
+              <PurchaseDeatail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/pos/purchase/purchase-challan"
+          element={
+            <ProtectedRoute>
+              <PurchaseChallan />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/pos/purchase/purchase-order"
+          element={
+            <ProtectedRoute>
+              <PurchaseOrder />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/pos/purchase/transaction-report"
+          element={
+            <ProtectedRoute>
+              <PurchaseTransactionReport />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/pos/purchase/add-supplier"
+          element={
+            <ProtectedRoute>
+              <AddSupplier />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/pos/purchase/add-purchase-requisition"
+          element={
+            <ProtectedRoute>
+              <PurchaseRequisition/>
+            </ProtectedRoute>
+          }
+        />
+
 
 
 
