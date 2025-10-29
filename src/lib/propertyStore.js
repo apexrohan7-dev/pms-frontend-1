@@ -1,28 +1,123 @@
-//     // src/lib/propertyStore.js
-// import { apiFetch } from "./api";
+// src/lib/propertyStore.js
 
-// const LS_KEY = "currentPropertyCode";
-// const EVT = "property:changed";
+const PROPERTY_CODE_KEY = "current:property:code";
+const PROPERTIES_LIST_KEY = "properties:list";
 
-// export function getCurrentPropertyCode() {
-//   return (localStorage.getItem(LS_KEY) || "").toUpperCase();
-// }
+/**
+ * Get current property code from localStorage
+ */
+export function getCurrentPropertyCode() {
+  try {
+    return localStorage.getItem(PROPERTY_CODE_KEY) || "";
+  } catch (error) {
+    console.error("Error getting current property code:", error);
+    return "";
+  }
+}
 
-// export function setCurrentPropertyCode(code = "") {
-//   const upper = String(code || "").toUpperCase();
-//   if (upper) localStorage.setItem(LS_KEY, upper);
-//   else localStorage.removeItem(LS_KEY);
-//   window.dispatchEvent(new CustomEvent(EVT, { detail: upper }));
-// }
+/**
+ * Set current property code in localStorage
+ */
+export function setCurrentPropertyCode(code) {
+  try {
+    if (code) {
+      localStorage.setItem(PROPERTY_CODE_KEY, code);
+    } else {
+      localStorage.removeItem(PROPERTY_CODE_KEY);
+    }
+  } catch (error) {
+    console.error("Error setting current property code:", error);
+  }
+}
 
-// export function onPropertyChange(cb) {
-//   const handler = (e) => cb(e.detail || "");
-//   window.addEventListener(EVT, handler);
-//   return () => window.removeEventListener(EVT, handler);
-// }
+/**
+ * Get list of properties from localStorage
+ */
+export function getStoredProperties() {
+  try {
+    const stored = localStorage.getItem(PROPERTIES_LIST_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error("Error getting stored properties:", error);
+    return [];
+  }
+}
 
-// export async function listMyProperties() {
-//   const res = await apiFetch("/api/properties?limit=500", { auth: true });
-//   const list = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
-//   return list.map(p => ({ code: (p.code || "").toUpperCase(), name: p.name || p.code }));
+/**
+ * Store properties list in localStorage
+ */
+export function storeProperties(properties) {
+  try {
+    localStorage.setItem(PROPERTIES_LIST_KEY, JSON.stringify(properties));
+  } catch (error) {
+    console.error("Error storing properties:", error);
+  }
+}
+
+/**
+ * Fetch list of properties from API
+ * Returns array of property objects: [{ code, name }, ...]
+ */
+export async function listMyProperties() {
+  try {
+    // Try to get from localStorage first
+    const cached = getStoredProperties();
+    
+    // Import apiFetch dynamically to avoid circular dependency
+    const { apiFetch } = await import("./api");
+    
+    // Fetch fresh data from API
+    const response = await apiFetch("/properties/list");
+    
+    // Expected response format: { properties: [...] } or [...]
+    const properties = Array.isArray(response) ? response : (response.properties || []);
+    
+    // Store in localStorage for offline access
+    if (properties.length > 0) {
+      storeProperties(properties);
+    }
+    
+    return properties;
+  } catch (error) {
+    console.error("Error fetching properties list:", error);
+    
+    // Fallback to cached data if API fails
+    const cached = getStoredProperties();
+    if (cached.length > 0) {
+      return cached;
+    }
+    
+    // Return empty array if no cached data
+    return [];
+  }
+}
+
+/**
+ * Clear all property-related data from localStorage
+ */
+export function clearPropertyStore() {
+  try {
+    localStorage.removeItem(PROPERTY_CODE_KEY);
+    localStorage.removeItem(PROPERTIES_LIST_KEY);
+  } catch (error) {
+    console.error("Error clearing property store:", error);
+  }
+}
+
+/**
+ * Get property by code
+ */
+export function getPropertyByCode(code) {
+  const properties = getStoredProperties();
+  return properties.find(p => p.code === code) || null;
+}
+
+/**
+ * Get current property details
+ */
+export function getCurrentProperty() {
+  const code = getCurrentPropertyCode();
+  return code ? getPropertyByCode(code) : null;
+}
+
 // }

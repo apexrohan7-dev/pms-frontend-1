@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Users, Clock, IndianRupee } from 'lucide-react';
 import "../../../assets/css/commanPage.css";
 import PosSidebar from '../../../components/sidebar/Possidebar';
-
+import PosTopbar from "../../../components/layout/postopbar"
 const Banquet = () => {
   const [tables, setTables] = useState([
     { id: 'B1', name: 'B1', status: 'available', orderValue: 0, guests: 0, time: null },
@@ -77,7 +77,9 @@ const Banquet = () => {
       {/* Main Content */}
       <main className="main-content">
         {/* Header */}
-        <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg mb-4 rounded-lg">
+        <PosTopbar />
+
+        {/* <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg mb-4 rounded-lg">
           <div className="flex justify-between items-center px-4 py-3">
             <div>
               <span className="text-xl font-bold">Trustify</span>
@@ -88,7 +90,7 @@ const Banquet = () => {
               <span className="text-sm mr-4">{currentDate.toLocaleDateString()}</span>
             </div>
           </div>
-        </header>
+        </header> */}
 
         {/* Action Bar */}
         <div className="bg-white rounded-lg shadow-sm p-3 mb-4 flex justify-between items-center">
