@@ -1,18 +1,21 @@
 // src/pages/POS/Inventory/InventoryStockConsumption.js
 import React, { useState, useEffect } from "react";
 import PosSidebar from "../../../components/sidebar/Possidebar";
+import PosTopbar from "../../../components/layout/postopbar";
+import { apiFetch } from "../../../lib/api";
+import "../../../assets/css/commanPage.css";
 
 export default function InventoryStockConsumption() {
   // State management
-  const [fromDate, setFromDate] = useState("10/25/2025");
-  const [toDate, setToDate] = useState("10/25/2025");
+  const [fromDate, setFromDate] = useState("2025-10-25");
+  const [toDate, setToDate] = useState("2025-10-25");
   const [item, setItem] = useState("");
   const [consumptionData, setConsumptionData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [loading, setLoading] = useState(false);
-  
+
   // Sidebar state - automatically syncs with PosSidebar
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -20,56 +23,56 @@ export default function InventoryStockConsumption() {
   const mockData = [
     {
       id: 1,
-      date: "10/25/2025",
+      date: "2025-10-25",
       transactionNo: "TXN001",
       departmentName: "Production",
       userName: "John Doe"
     },
     {
       id: 2,
-      date: "10/25/2025",
+      date: "2025-10-25",
       transactionNo: "TXN002",
       departmentName: "Assembly",
       userName: "Jane Smith"
     },
     {
       id: 3,
-      date: "10/24/2025",
+      date: "2025-10-24",
       transactionNo: "TXN003",
       departmentName: "Warehouse",
       userName: "Mike Johnson"
     },
     {
       id: 4,
-      date: "10/24/2025",
+      date: "2025-10-24",
       transactionNo: "TXN004",
       departmentName: "Production",
       userName: "Sarah Williams"
     },
     {
       id: 5,
-      date: "10/23/2025",
+      date: "2025-10-23",
       transactionNo: "TXN005",
       departmentName: "Assembly",
       userName: "Robert Brown"
     },
     {
       id: 6,
-      date: "10/23/2025",
+      date: "2025-10-23",
       transactionNo: "TXN006",
       departmentName: "Storage",
       userName: "Emily Davis"
     },
     {
       id: 7,
-      date: "10/22/2025",
+      date: "2025-10-22",
       transactionNo: "TXN007",
       departmentName: "Production",
       userName: "David Miller"
     },
     {
       id: 8,
-      date: "10/22/2025",
+      date: "2025-10-22",
       transactionNo: "TXN008",
       departmentName: "Warehouse",
       userName: "Lisa Anderson"
@@ -92,7 +95,7 @@ export default function InventoryStockConsumption() {
     loadConsumptionData();
   }, []);
 
-  // Listen for sidebar collapse state changes
+  // Sidebar collapse detection
   useEffect(() => {
     const handleSidebarChange = () => {
       const sidebar = document.querySelector(".rsb");
@@ -100,12 +103,11 @@ export default function InventoryStockConsumption() {
         setSidebarCollapsed(sidebar.classList.contains("rsb--mini"));
       }
     };
-
     handleSidebarChange();
 
     const observer = new MutationObserver(handleSidebarChange);
     const sidebar = document.querySelector(".rsb");
-    
+
     if (sidebar) {
       observer.observe(sidebar, {
         attributes: true,
@@ -119,11 +121,18 @@ export default function InventoryStockConsumption() {
   const loadConsumptionData = async () => {
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Uncomment and use actual API when ready:
+      // const response = await apiFetch('/inventory/stock-consumption');
+      // setConsumptionData(response);
+      // setFilteredData(response);
+
+      await new Promise(resolve => setTimeout(resolve, 500)); // simulate delay
       setConsumptionData(mockData);
       setFilteredData(mockData);
     } catch (error) {
       console.error("Failed to load consumption data:", error);
+      setConsumptionData([]);
+      setFilteredData([]);
     } finally {
       setLoading(false);
     }
@@ -133,8 +142,17 @@ export default function InventoryStockConsumption() {
     let filtered = [...consumptionData];
 
     if (item) {
-      // Filter by item if needed
-      console.log("Filtering by item:", item);
+      filtered = filtered.filter(row => row.transactionNo.toLowerCase().includes(item.toLowerCase()));
+    }
+
+    if (fromDate) {
+      const from = new Date(fromDate);
+      filtered = filtered.filter(row => new Date(row.date) >= from);
+    }
+
+    if (toDate) {
+      const to = new Date(toDate);
+      filtered = filtered.filter(row => new Date(row.date) <= to);
     }
 
     setFilteredData(filtered);
@@ -145,15 +163,13 @@ export default function InventoryStockConsumption() {
     console.log("Add Stock Manual clicked");
   };
 
-  // Calculate pagination
+  // Pagination calculations
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+  const handlePageChange = (page) => setCurrentPage(page);
 
   const styles = {
     layout: {
@@ -202,35 +218,6 @@ export default function InventoryStockConsumption() {
       fontSize: '20px',
       fontWeight: 600,
       color: '#333'
-    },
-    headerRight: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '15px'
-    },
-    headerInfo: {
-      fontSize: '12px',
-      color: '#666'
-    },
-    btnAudit: {
-      padding: '6px 16px',
-      backgroundColor: '#1976d2',
-      color: 'white',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      fontSize: '13px',
-      fontWeight: 500
-    },
-    btnClose: {
-      width: '30px',
-      height: '30px',
-      background: 'transparent',
-      border: 'none',
-      fontSize: '18px',
-      color: '#666',
-      cursor: 'pointer',
-      borderRadius: '50%'
     },
     actionBar: {
       marginBottom: '20px',
@@ -432,22 +419,15 @@ export default function InventoryStockConsumption() {
   return (
     <div style={styles.layout}>
       <PosSidebar />
-
       <div style={styles.page}>
+        <PosTopbar />
         <div style={styles.container}>
+
           {/* Header Section */}
           <div style={styles.pageHeader}>
             <div style={styles.headerLeft}>
               <div style={styles.pageIcon}>📦</div>
               <h2 style={styles.pageTitle}>Stock Manual Consumption Details</h2>
-            </div>
-            <div style={styles.headerRight}>
-              <span style={styles.headerInfo}>Switch Branch : TRUSTIFYEDGE (Jaipur)</span>
-              <span style={styles.headerInfo}>Apr 1 2025-Mar 31 2026</span>
-              <span style={styles.headerInfo}>$1341 Buser</span>
-              <span style={styles.headerInfo}>Today: Oct 07 2025 13:19:30</span>
-              <button style={styles.btnAudit}>Audit</button>
-              <button style={styles.btnClose}>⚙</button>
             </div>
           </div>
 
@@ -463,28 +443,28 @@ export default function InventoryStockConsumption() {
             <div style={styles.filterRow}>
               <div style={styles.filterItem}>
                 <label style={styles.label}>From Date</label>
-                <input 
-                  type="text" 
+                <input
+                  type="date"
                   value={fromDate}
                   onChange={(e) => setFromDate(e.target.value)}
                   style={styles.formInput}
                 />
               </div>
-              
+
               <div style={styles.filterItem}>
                 <label style={styles.label}>To Date</label>
-                <input 
-                  type="text" 
+                <input
+                  type="date"
                   value={toDate}
                   onChange={(e) => setToDate(e.target.value)}
                   style={styles.formInput}
                 />
               </div>
-              
+
               <div style={styles.filterItem}>
                 <label style={styles.label}>Item</label>
                 <div style={styles.selectWithClear}>
-                  <select 
+                  <select
                     value={item}
                     onChange={(e) => setItem(e.target.value)}
                     style={styles.formSelect}
@@ -495,19 +475,20 @@ export default function InventoryStockConsumption() {
                     ))}
                   </select>
                   {item && (
-                    <button 
+                    <button
                       style={styles.clearBtn}
                       onClick={() => setItem("")}
+                      aria-label="Clear selection"
                     >
                       ✕
                     </button>
                   )}
                 </div>
               </div>
-              
+
               <div style={styles.filterItem}>
-                <button 
-                  style={styles.btnSearch} 
+                <button
+                  style={styles.btnSearch}
                   onClick={handleSearch}
                   disabled={loading}
                 >
@@ -530,7 +511,7 @@ export default function InventoryStockConsumption() {
                   <tr>
                     <th style={styles.th}>Date</th>
                     <th style={styles.th}>Transaction No.</th>
-                    <th style={styles.th}>DepartmentName</th>
+                    <th style={styles.th}>Department Name</th>
                     <th style={styles.th}>User Name</th>
                     <th style={styles.th}>Action</th>
                   </tr>
@@ -544,7 +525,7 @@ export default function InventoryStockConsumption() {
                         <td style={styles.td}>{row.departmentName}</td>
                         <td style={styles.td}>{row.userName}</td>
                         <td style={styles.td}>
-                          <button 
+                          <button
                             style={{
                               padding: '6px 12px',
                               backgroundColor: 'transparent',
@@ -578,7 +559,7 @@ export default function InventoryStockConsumption() {
             <div style={styles.paginationContainer}>
               <div style={styles.paginationLeft}>
                 <label style={styles.label}>Items per page</label>
-                <select 
+                <select
                   value={itemsPerPage}
                   onChange={(e) => {
                     setItemsPerPage(Number(e.target.value));
@@ -593,7 +574,7 @@ export default function InventoryStockConsumption() {
                   <option value={100}>100 per page</option>
                 </select>
               </div>
-              
+
               <div style={styles.paginationCenter}>
                 <span>
                   Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredData.length)} of {filteredData.length} entries
@@ -601,21 +582,21 @@ export default function InventoryStockConsumption() {
               </div>
 
               <div style={styles.paginationRight}>
-                <button 
+                <button
                   style={currentPage === 1 ? styles.paginationBtnDisabled : styles.paginationBtn}
                   onClick={() => handlePageChange(1)}
                   disabled={currentPage === 1}
                 >
                   ««
                 </button>
-                <button 
+                <button
                   style={currentPage === 1 ? styles.paginationBtnDisabled : styles.paginationBtn}
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
                 >
                   ‹
                 </button>
-                
+
                 {[...Array(totalPages)].map((_, i) => (
                   <button
                     key={i + 1}
@@ -625,15 +606,15 @@ export default function InventoryStockConsumption() {
                     {i + 1}
                   </button>
                 ))}
-                
-                <button 
+
+                <button
                   style={currentPage === totalPages ? styles.paginationBtnDisabled : styles.paginationBtn}
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
                 >
                   ›
                 </button>
-                <button 
+                <button
                   style={currentPage === totalPages ? styles.paginationBtnDisabled : styles.paginationBtn}
                   onClick={() => handlePageChange(totalPages)}
                   disabled={currentPage === totalPages}
@@ -651,11 +632,11 @@ export default function InventoryStockConsumption() {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
-        
+
         table tbody tr:hover {
           background-color: #f9f9f9;
         }
-        
+
         button:hover:not(:disabled) {
           opacity: 0.9;
         }
