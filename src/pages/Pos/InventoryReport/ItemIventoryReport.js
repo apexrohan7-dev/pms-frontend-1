@@ -1,6 +1,7 @@
 // src/pages/POS/InventoryReport/ItemInventoryReport.js
 import React, { useState, useEffect } from "react";
 import PosSidebar from "../../../components/sidebar/Possidebar";
+import PosTopbar from "../../../components/layout/postopbar";
 
 export default function ItemInventoryReport() {
   // UI states for filters
@@ -349,6 +350,8 @@ export default function ItemInventoryReport() {
   };
 
   return (
+    <div className="container">
+      <PosTopbar/>
     <div style={styles.layout}>
       <PosSidebar />
 
@@ -360,14 +363,14 @@ export default function ItemInventoryReport() {
               <div style={styles.pageIcon}>📊</div>
               <h2 style={styles.pageTitle}>Item Inventory Report</h2>
             </div>
-            <div style={styles.headerRight}>
+            {/* <div style={styles.headerRight}>
               <span style={styles.headerInfo}>Switch Branch : TRUSTIFYEDGE (Jaipur)</span>
               <span style={styles.headerInfo}>Apr 1 2025-Mar 31 2026</span>
               <span style={styles.headerInfo}>51341 Buser</span>
               <span style={styles.headerInfo}>Today: Oct 07 2025 13:59:37</span>
               <button style={styles.btnAudit}>Audit</button>
               <button style={styles.btnClose}>⚙</button>
-            </div>
+            </div> */}
           </div>
           {/* Filters panel */}
           <div style={styles.filterPanel}>
@@ -545,6 +548,7 @@ export default function ItemInventoryReport() {
           opacity: 0.9;
         }
       `}</style>
+    </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 // src/pages/POS/InventoryReport/NonMovingItemReport.js
 import React, { useState, useEffect } from "react";
 import PosSidebar from "../../../components/sidebar/Possidebar";
+import PosTopbar from "../../../components/layout/postopbar";
 
 export default function NonMovingItemReport() {
   // Filters and controls
@@ -214,6 +215,8 @@ export default function NonMovingItemReport() {
   };
 
   return (
+    <div className="container">
+      <PosTopbar/>
     <div style={styles.layout}>
       <PosSidebar />
 
@@ -312,6 +315,7 @@ export default function NonMovingItemReport() {
           opacity: 0.9;
         }
       `}</style>
+    </div>
     </div>
   );
 }

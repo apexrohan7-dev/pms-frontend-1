@@ -1,6 +1,7 @@
 // src/pages/POS/InventoryReoprt/StockManualReport.js
 import React, { useState, useEffect } from "react";
 import PosSidebar from "../../../components/sidebar/Possidebar";
+import PosTopbar from "../../../components/layout/postopbar";
 
 export default function StockManualReport() {
   const [department, setDepartment] = useState("");
@@ -260,6 +261,8 @@ export default function StockManualReport() {
   };
 
   return (
+    <div className="container">
+      <PosTopbar/>
     <div style={styles.layout}>
       <PosSidebar />
 
@@ -383,6 +386,7 @@ export default function StockManualReport() {
           opacity: 0.9;
         }
       `}</style>
+    </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 // src/pages/POS/Reports/OrderSummaryReport.js
 import React, { useState, useEffect } from "react";
 import PosSidebar from "../../../components/sidebar/Possidebar";
+import PosTopbar from "../../../components/layout/postopbar";
 
 export default function OrderSummaryReport() {
   const [department, setDepartment] = useState("");
@@ -264,6 +265,8 @@ export default function OrderSummaryReport() {
   };
 
   return (
+    <div className="container">
+    <PosTopbar/>
     <div style={styles.layout}>
       <PosSidebar />
       <div style={styles.page}>
@@ -361,6 +364,7 @@ export default function OrderSummaryReport() {
           opacity: 0.9;
         }
       `}</style>
+    </div>
     </div>
   );
 }

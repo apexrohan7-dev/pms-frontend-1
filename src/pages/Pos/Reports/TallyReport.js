@@ -1,6 +1,7 @@
 // src/pages/POS/Reports/TallyReport.js
 import React, { useState, useEffect } from "react";
 import PosSidebar from "../../../components/sidebar/Possidebar";
+import PosTapbar from "../../../components/layout/postopbar";
 
 export default function TallyReport() {
   const [department, setDepartment] = useState("");
@@ -271,22 +272,24 @@ export default function TallyReport() {
   };
 
   return (
+    <div className="container">
+      <PosTapbar/>
     <div style={styles.layout}>
       <PosSidebar />
 
       <div style={styles.page}>
         <div style={styles.container}>
           {/* Header */}
-          <div style={styles.pageHeader}>
+           <div style={styles.pageHeader}>
             <div style={styles.pageIcon}>🧾</div>
             <span style={styles.pageTitle}>Tally Report</span>
-            <span style={styles.headerInfo}>Switch Branch : TRUSTIFYEDGE (Jaipur)</span>
+            {/* <span style={styles.headerInfo}>Switch Branch : TRUSTIFYEDGE (Jaipur)</span>
             <span style={styles.headerInfo}>Apr 1 2025-Mar 31 2026</span>
             <span style={styles.headerInfo}>51341 Buser</span>
             <span style={styles.headerInfo}>Today: Oct 07 2025 14:33:20</span>
             <button style={styles.btnAudit}>Audit</button>
-            <button style={styles.btnClose}>⚙</button>
-          </div>
+            <button style={styles.btnClose}>⚙</button> */}
+          </div> 
           {/* Filter/Search Panel */}
           <div style={styles.filterPanel}>
             <label style={styles.filterLabel}>Department Name</label>
@@ -431,6 +434,7 @@ export default function TallyReport() {
           opacity: 0.9;
         }
       `}</style>
+    </div>
     </div>
   );
 }

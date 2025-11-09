@@ -1,6 +1,7 @@
 // src/pages/POS/InventoryReport/ItemTransactionReport.js
 import React, { useState, useEffect } from "react";
 import PosSidebar from "../../../components/sidebar/Possidebar";
+import PosTopbar from "../../../components/layout/postopbar";
 
 export default function ItemTransactionReport() {
   // Filters and controls
@@ -269,13 +270,15 @@ export default function ItemTransactionReport() {
   };
 
   return (
+    <div className="container">
+      <PosTopbar/>
     <div style={styles.layout}>
       <PosSidebar />
 
       <div style={styles.page}>
         <div style={styles.container}>
           {/* Header */}
-          <div style={styles.pageHeader}>
+          {/* <div style={styles.pageHeader}>
             <div style={styles.pageIcon}>📄</div>
             <span style={styles.pageTitle}>Issue Transaction Report</span>
             <span style={styles.headerInfo}>Switch Branch : TRUSTIFYEDGE (Jaipur)</span>
@@ -284,7 +287,7 @@ export default function ItemTransactionReport() {
             <span style={styles.headerInfo}>Today: Oct 07 2025 14:09:10</span>
             <button style={styles.btnAudit}>Audit</button>
             <button style={styles.btnClose}>⚙</button>
-          </div>
+          </div> */}
           {/* Filter/Search Panel */}
           <div style={styles.filterPanel}>
             <label style={styles.filterLabel}>Date</label>
@@ -367,6 +370,7 @@ export default function ItemTransactionReport() {
           opacity: 0.9;
         }
       `}</style>
+    </div>
     </div>
   );
 }

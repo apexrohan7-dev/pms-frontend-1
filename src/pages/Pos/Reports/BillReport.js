@@ -1,6 +1,7 @@
 // src/pages/POS/Reports/BillReport.js
 import React, { useState, useEffect } from "react";
 import PosSidebar from "../../../components/sidebar/Possidebar";
+import PosTopbar from "../../../components/layout/postopbar";
 
 export default function BillReport() {
   const [department, setDepartment] = useState("");
@@ -269,6 +270,8 @@ export default function BillReport() {
   };
 
   return (
+    <div className="container">
+      <PosTopbar/>
     <div style={styles.layout}>
       <PosSidebar />
 
@@ -278,12 +281,12 @@ export default function BillReport() {
           <div style={styles.pageHeader}>
             <div style={styles.pageIcon}>🧾</div>
             <span style={styles.pageTitle}>Bill Report</span>
-            <span style={styles.headerInfo}>Switch Branch : TRUSTIFYEDGE (Jaipur)</span>
+            {/* <span style={styles.headerInfo}>Switch Branch : TRUSTIFYEDGE (Jaipur)</span>
             <span style={styles.headerInfo}>Apr 1 2025-Mar 31 2026</span>
             <span style={styles.headerInfo}>51341 Buser</span>
             <span style={styles.headerInfo}>Today: Oct 07 2025 14:50:53</span>
             <button style={styles.btnAudit}>Audit</button>
-            <button style={styles.btnClose}>⚙</button>
+            <button style={styles.btnClose}>⚙</button> */}
           </div>
           {/* Filter/Search Panel */}
           <div style={styles.filterPanel}>
@@ -426,6 +429,7 @@ export default function BillReport() {
           opacity: 0.9;
         }
       `}</style>
+    </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 // src/pages/POS/Reports/FnbSummaryReport.js
 import React, { useState, useEffect } from "react";
 import PosSidebar from "../../../components/sidebar/Possidebar";
+import PosTopbar from "../../../components/layout/postopbar";
 
 export default function FnbSummaryReport() {
   const [department, setDepartment] = useState("");
@@ -238,6 +239,8 @@ export default function FnbSummaryReport() {
   };
 
   return (
+    <div className="container">
+      <PosTopbar/>
     <div style={styles.layout}>
       <PosSidebar />
       <div style={styles.page}>
@@ -246,12 +249,12 @@ export default function FnbSummaryReport() {
           <div style={styles.pageHeader}>
             <div style={styles.pageIcon}>🍽️</div>
             <span style={styles.pageTitle}>FNB Summary Report</span>
-            <span style={styles.headerInfo}>Switch Branch : TRUSTIFYEDGE (Jaipur)</span>
+            {/* <span style={styles.headerInfo}>Switch Branch : TRUSTIFYEDGE (Jaipur)</span>
             <span style={styles.headerInfo}>Apr 1 2025-Mar 31 2026</span>
             <span style={styles.headerInfo}>51341 Buser</span>
             <span style={styles.headerInfo}>Today: Oct 07 2025 14:56:12</span>
             <button style={styles.btnAudit}>Audit</button>
-            <button style={styles.btnClose}>⚙</button>
+            <button style={styles.btnClose}>⚙</button> */}
           </div>
           {/* Filters */}
           <div style={styles.filterPanel}>
@@ -351,6 +354,7 @@ export default function FnbSummaryReport() {
           opacity: 0.9;
         }
       `}</style>
+    </div>
     </div>
   );
 }
