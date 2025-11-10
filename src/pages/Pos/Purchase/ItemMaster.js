@@ -1,6 +1,7 @@
 // src/pages/POS/Settings/ItemMaster.js
 import React, { useState, useEffect } from "react";
 import PosSidebar from "../../../components/sidebar/Possidebar";
+import PosTopbar from "../../../components/layout/postopbar";
 
 export default function ItemMaster() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -279,6 +280,8 @@ export default function ItemMaster() {
   };
 
   return (
+    <div className="container">
+          <PosTopbar/>
     <div style={styles.layout}>
       <PosSidebar />
       <div style={styles.page}>
@@ -427,6 +430,7 @@ export default function ItemMaster() {
           }
         `}</style>
       </div>
+    </div>
     </div>
   );
 }

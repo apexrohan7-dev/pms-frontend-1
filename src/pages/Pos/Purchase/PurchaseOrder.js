@@ -1,6 +1,7 @@
 // src/pages/POS/Purchase/PurchaseOrder.js
 import React, { useState, useEffect } from "react";
 import PosSidebar from "../../../components/sidebar/Possidebar";
+import PosTopbar from "../../../components/layout/postopbar";
 
 export default function PurchaseOrder() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -204,6 +205,8 @@ export default function PurchaseOrder() {
   };
 
   return (
+    <div className="container">
+          <PosTopbar/>
     <div style={styles.layout}>
       <PosSidebar />
       <div style={styles.page}>
@@ -312,6 +315,7 @@ export default function PurchaseOrder() {
           }
         `}</style>
       </div>
+    </div>
     </div>
   );
 }

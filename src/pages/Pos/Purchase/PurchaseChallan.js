@@ -1,6 +1,7 @@
 // src/pages/POS/Purchase/PurchaseChallan.js
 import React, { useState, useEffect } from "react";
 import PosSidebar from "../../../components/sidebar/Possidebar";
+import PosTopbar from "../../../components/layout/postopbar";
 
 export default function PurchaseChallan() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -204,6 +205,8 @@ export default function PurchaseChallan() {
   };
 
   return (
+    <div className="container">
+          <PosTopbar/>
     <div style={styles.layout}>
       <PosSidebar />
       <div style={styles.page}>
@@ -312,6 +315,7 @@ export default function PurchaseChallan() {
           }
         `}</style>
       </div>
+    </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 // src/pages/POS/Settings/FinancialYear.js
 import React, { useState, useEffect } from "react";
 import PosSidebar from "../../../components/sidebar/Possidebar";
+import PosTopbar from "../../../components/layout/postopbar";
 
 export default function FinancialYear() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -139,6 +140,8 @@ export default function FinancialYear() {
   };
 
   return (
+    <div className="container">
+      <PosTopbar/>
     <div style={styles.layout}>
       <PosSidebar />
       <div style={styles.page}>
@@ -147,11 +150,11 @@ export default function FinancialYear() {
           <div style={styles.pageHeader}>
             <div style={styles.pageIcon}>📅</div>
             <span style={styles.pageTitle}>Financial Year</span>
-            <span style={styles.headerInfo}>Switch Branch : TRUSTIFYEDGE (Jaipur)</span>
+            {/* <span style={styles.headerInfo}>Switch Branch : TRUSTIFYEDGE (Jaipur)</span>
             <span style={styles.headerInfo}>Apr 1 2025-Mar 31 2026</span>
             <span style={styles.headerInfo}>51341 Buser</span>
             <span style={styles.headerInfo}>Today: Oct 07 2025 14:06:17</span>
-            <button style={styles.btnAudit}>Audit</button>
+            <button style={styles.btnAudit}>Audit</button> */}
           </div>
           {/* Table */}
           <div style={styles.dataTableContainer}>
@@ -186,6 +189,7 @@ export default function FinancialYear() {
           }
         `}</style>
       </div>
+    </div>
     </div>
   );
 }

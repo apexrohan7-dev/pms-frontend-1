@@ -1,6 +1,7 @@
 // src/pages/POS/Purchase/AddSupplier.js
 import React, { useState, useEffect } from "react";
 import PosSidebar from "../../../components/sidebar/Possidebar";
+import PosTopbar from "../../../components/layout/postopbar";
 
 export default function AddSupplier() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -152,6 +153,8 @@ export default function AddSupplier() {
   };
 
   return (
+    <div className="container">
+      <PosTopbar/>
     <div style={styles.layout}>
       <PosSidebar />
       <div style={styles.page}>
@@ -232,6 +235,7 @@ export default function AddSupplier() {
           </div>
           <button style={styles.saveBtn}>Save</button>
         </div>
+      </div>
       </div>
     </div>
   );

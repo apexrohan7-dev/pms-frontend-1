@@ -1,6 +1,7 @@
 // src/pages/POS/Purchase/PurchaseTransactionReport.js
 import React, { useState, useEffect } from "react";
 import PosSidebar from "../../../components/sidebar/Possidebar";
+import PosTopbar from "../../../components/layout/postopbar";
 
 export default function PurchaseTransactionReport() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -180,6 +181,8 @@ export default function PurchaseTransactionReport() {
   };
 
   return (
+    <div className="container">
+          <PosTopbar/>
     <div style={styles.layout}>
       <PosSidebar />
       <div style={styles.page}>
@@ -326,6 +329,7 @@ export default function PurchaseTransactionReport() {
           }
         `}</style>
       </div>
+    </div>
     </div>
   );
 }

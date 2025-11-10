@@ -1,6 +1,7 @@
 // src/pages/POS/Settings/PrinterSettings.js
 import React, { useState } from "react";
 import PosSidebar from "../../../components/sidebar/Possidebar";
+import PosTopbar from "../../../components/layout/postopbar";
 
 export default function PrinterSettings() {
   const [department, setDepartment] = useState("");
@@ -201,6 +202,8 @@ export default function PrinterSettings() {
   };
 
   return (
+    <div className="container">
+      <PosTopbar/>
     <div style={styles.layout}>
       <PosSidebar />
 
@@ -209,11 +212,11 @@ export default function PrinterSettings() {
           <div style={styles.pageHeader}>
             <div style={styles.pageIcon}>🖨️</div>
             <span style={styles.pageTitle}>Billing Printer Settings</span>
-            <span style={styles.headerInfo}>Switch Branch : TRUSTIFYEDGE (Jaipur)</span>
+            {/* <span style={styles.headerInfo}>Switch Branch : TRUSTIFYEDGE (Jaipur)</span>
             <span style={styles.headerInfo}>Apr 1 2025-Mar 31 2026</span>
             <span style={styles.headerInfo}>51341 Buser</span>
             <span style={styles.headerInfo}>Today: Oct 07 2025 13:58:44</span>
-            <button style={styles.btnAudit}>Audit</button>
+            <button style={styles.btnAudit}>Audit</button> */}
           </div>
 
           {/* Top Form Inputs */}
@@ -311,6 +314,7 @@ export default function PrinterSettings() {
           opacity: 0.9;
         }
       `}</style>
+    </div>
     </div>
   );
 }
