@@ -372,3 +372,591 @@ export default function PosPage() {
     </div>
   );
 }
+
+
+// src/pages/PosPage.js
+// import React, { useEffect, useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import PosSidebar from "../../components/sidebar/Possidebar";
+// import "./PosPage.css";
+// import PosTopbar from "../../components/layout/postopbar";
+// import { apiFetch } from "../../../lib/api";
+
+// export default function PosPage() {
+//   const navigate = useNavigate();
+
+//   // Loading and error states
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+
+//   // Dashboard KPIs
+//   const [dashboardData, setDashboardData] = useState({
+//     sales: { current: 0, previous: 0 },
+//     outstanding: { current: 0, previous: 0 },
+//     collection: { current: 0, previous: 0 },
+//     totalBill: { current: 0, previous: 0 }
+//   });
+
+//   // Filters for top item sales
+//   const [filters, setFilters] = useState({
+//     branch: "F&B",
+//     restaurant: "RESTAURANT",
+//     service: "DownSend",
+//     dateFrom: "10/07/2025",
+//     dateTo: "10/07/2025"
+//   });
+
+//   // Tab state for Top Sale Item
+//   const [activeTab, setActiveTab] = useState("current");
+
+//   // Table states
+//   const [topItemSales, setTopItemSales] = useState([]);
+//   const [topSaleItems, setTopSaleItems] = useState({ current: [], last: [] });
+//   const [topDebtors, setTopDebtors] = useState([]);
+//   const [topCreditors, setTopCreditors] = useState([]);
+
+//   // Action card state
+//   const [actionCards, setActionCards] = useState({
+//     totalBillCancel: [0, 0],
+//     billModify: [0, 0],
+//     billDiscount: [0, 0],
+//     billReprint: [0, 0],
+//     voidItem: [0, 0]
+//   });
+
+//   const formatCurrency = (amount) => {
+//     return "₹" + parseFloat(amount).toFixed(2);
+//   };
+
+//   // Fetch dashboard KPIs
+//   const fetchDashboardData = async () => {
+//     try {
+//       const response = await apiFetch("/api/dashboard/kpis", {
+//         method: "GET"
+//       });
+      
+//       if (response.success) {
+//         setDashboardData(response.data);
+//       }
+//     } catch (err) {
+//       console.error("Error fetching dashboard KPIs:", err);
+//       throw err;
+//     }
+//   };
+
+//   // Fetch top item sales based on filters
+//   const fetchTopItemSales = async () => {
+//     try {
+//       const queryParams = new URLSearchParams({
+//         branch: filters.branch,
+//         restaurant: filters.restaurant,
+//         service: filters.service,
+//         dateFrom: filters.dateFrom,
+//         dateTo: filters.dateTo
+//       });
+
+//       const response = await apiFetch(`/api/dashboard/top-item-sales?${queryParams}`, {
+//         method: "GET"
+//       });
+
+//       if (response.success) {
+//         setTopItemSales(response.data || []);
+//       }
+//     } catch (err) {
+//       console.error("Error fetching top item sales:", err);
+//       throw err;
+//     }
+//   };
+
+//   // Fetch top sale items (current and last period)
+//   const fetchTopSaleItems = async () => {
+//     try {
+//       const response = await apiFetch("/api/dashboard/top-sale-items", {
+//         method: "GET"
+//       });
+
+//       if (response.success) {
+//         setTopSaleItems({
+//           current: response.data.current || [],
+//           last: response.data.last || []
+//         });
+//       }
+//     } catch (err) {
+//       console.error("Error fetching top sale items:", err);
+//       throw err;
+//     }
+//   };
+
+//   // Fetch top debtors and creditors
+//   const fetchDebtorsAndCreditors = async () => {
+//     try {
+//       const [debtorsResponse, creditorsResponse] = await Promise.all([
+//         apiFetch("/api/dashboard/top-debtors", { method: "GET" }),
+//         apiFetch("/api/dashboard/top-creditors", { method: "GET" })
+//       ]);
+
+//       if (debtorsResponse.success) {
+//         setTopDebtors(debtorsResponse.data || []);
+//       }
+
+//       if (creditorsResponse.success) {
+//         setTopCreditors(creditorsResponse.data || []);
+//       }
+//     } catch (err) {
+//       console.error("Error fetching debtors/creditors:", err);
+//       throw err;
+//     }
+//   };
+
+//   // Fetch action cards data
+//   const fetchActionCards = async () => {
+//     try {
+//       const response = await apiFetch("/api/dashboard/action-cards", {
+//         method: "GET"
+//       });
+
+//       if (response.success) {
+//         setActionCards(response.data);
+//       }
+//     } catch (err) {
+//       console.error("Error fetching action cards:", err);
+//       throw err;
+//     }
+//   };
+
+//   // Initial data load
+//   useEffect(() => {
+//     let isMounted = true;
+
+//     const loadDashboardData = async () => {
+//       try {
+//         setLoading(true);
+//         setError(null);
+
+//         // Fetch all data in parallel for better performance
+//         await Promise.all([
+//           fetchDashboardData(),
+//           fetchTopSaleItems(),
+//           fetchDebtorsAndCreditors(),
+//           fetchActionCards()
+//         ]);
+
+//         if (isMounted) {
+//           setLoading(false);
+//         }
+//       } catch (err) {
+//         if (isMounted) {
+//           setError(err.message || "Failed to load dashboard data");
+//           setLoading(false);
+//         }
+//       }
+//     };
+
+//     loadDashboardData();
+
+//     return () => {
+//       isMounted = false;
+//     };
+//   }, []);
+
+//   // Fetch top item sales when filters change
+//   useEffect(() => {
+//     let isMounted = true;
+
+//     const loadFilteredData = async () => {
+//       try {
+//         await fetchTopItemSales();
+//       } catch (err) {
+//         if (isMounted) {
+//           console.error("Filter fetch error:", err);
+//         }
+//       }
+//     };
+
+//     loadFilteredData();
+
+//     return () => {
+//       isMounted = false;
+//     };
+//   }, [filters]);
+
+//   // Table helpers
+//   const renderTableRows = (data, columns, noDataLabel = "No data available") => {
+//     if (!data || data.length === 0) {
+//       return (
+//         <tr>
+//           <td colSpan={columns} className="no-data">{noDataLabel}</td>
+//         </tr>
+//       );
+//     }
+//     return data.map((row, i) => (
+//       <tr key={i}>
+//         <td>{row.name}</td>
+//         <td className="text-right">
+//           {row.qty !== undefined ? row.qty : formatCurrency(row.amount)}
+//         </td>
+//       </tr>
+//     ));
+//   };
+
+//   // Loading state
+//   if (loading) {
+//     return (
+//       <div className="Container">
+//         <PosTopbar />
+//         <div className="page">
+//           <PosSidebar />
+//           <div className="res-wrap">
+//             <div className="loading-container">
+//               <div className="spinner"></div>
+//               <p>Loading dashboard data...</p>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   // Error state
+//   if (error) {
+//     return (
+//       <div className="Container">
+//         <PosTopbar />
+//         <div className="page">
+//           <PosSidebar />
+//           <div className="res-wrap">
+//             <div className="error-container">
+//               <div className="error-icon">⚠️</div>
+//               <h3>Error Loading Dashboard</h3>
+//               <p>{error}</p>
+//               <button 
+//                 className="retry-btn" 
+//                 onClick={() => window.location.reload()}
+//               >
+//                 Retry
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   // Render
+//   return (
+//     <div className="Container">
+//       <PosTopbar />
+//       <div className="page">
+//         <PosSidebar />
+
+//         <div className="res-wrap">
+//           {/* Dashboard Header */}
+//           <div className="dashboard-header">
+//             <div className="dashboard-header-left">
+//               <div className="dashboard-icon">📊</div>
+//               <h2 className="page-title">Dashboard</h2>
+//             </div>
+//           </div>
+
+//           {/* KPI Cards */}
+//           <div className="kpi-grid">
+//             <div className="kpi-card">
+//               <div className="kpi-left">
+//                 <div className="kpi-icon-wrapper">💰</div>
+//                 <div className="kpi-info">
+//                   <h3 className="kpi-title">Sales</h3>
+//                 </div>
+//               </div>
+//               <div className="kpi-values">
+//                 <div className="kpi-current">
+//                   {formatCurrency(dashboardData.sales.current)}
+//                 </div>
+//                 <div className="kpi-previous">
+//                   {formatCurrency(dashboardData.sales.previous)}
+//                 </div>
+//               </div>
+//             </div>
+//             <div className="kpi-card">
+//               <div className="kpi-left">
+//                 <div className="kpi-icon-wrapper">💳</div>
+//                 <div className="kpi-info">
+//                   <h3 className="kpi-title">Outstanding Amount</h3>
+//                 </div>
+//               </div>
+//               <div className="kpi-values">
+//                 <div className="kpi-current">
+//                   {formatCurrency(dashboardData.outstanding.current)}
+//                 </div>
+//                 <div className="kpi-previous">
+//                   {formatCurrency(dashboardData.outstanding.previous)}
+//                 </div>
+//               </div>
+//             </div>
+//             <div className="kpi-card">
+//               <div className="kpi-left">
+//                 <div className="kpi-icon-wrapper">🏦</div>
+//                 <div className="kpi-info">
+//                   <h3 className="kpi-title">Outstanding Collection</h3>
+//                 </div>
+//               </div>
+//               <div className="kpi-values">
+//                 <div className="kpi-current">
+//                   {formatCurrency(dashboardData.collection.current)}
+//                 </div>
+//                 <div className="kpi-previous">
+//                   {formatCurrency(dashboardData.collection.previous)}
+//                 </div>
+//               </div>
+//             </div>
+//             <div className="kpi-card">
+//               <div className="kpi-left">
+//                 <div className="kpi-icon-wrapper">📄</div>
+//                 <div className="kpi-info">
+//                   <h3 className="kpi-title">Total Bill</h3>
+//                 </div>
+//               </div>
+//               <div className="kpi-values">
+//                 <div className="kpi-current">
+//                   {formatCurrency(dashboardData.totalBill.current)}
+//                 </div>
+//                 <div className="kpi-previous">
+//                   {formatCurrency(dashboardData.totalBill.previous)}
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* Main Dashboard Grid */}
+//           <div className="dashboard-grid">
+//             {/* Top Item Sales List */}
+//             <div className="dashboard-card">
+//               <div className="card-header">
+//                 <h3 className="card-title">Top Item Sales List</h3>
+//               </div>
+//               <div className="card-body">
+//                 {/* Filters */}
+//                 <div className="filters-row">
+//                   <div className="filter-group">
+//                     <select
+//                       value={filters.branch}
+//                       onChange={(e) => setFilters({ ...filters, branch: e.target.value })}
+//                     >
+//                       <option value="F&B">F&B</option>
+//                       <option value="Retail">Retail</option>
+//                     </select>
+//                   </div>
+//                   <div className="filter-group">
+//                     <select
+//                       value={filters.restaurant}
+//                       onChange={(e) => setFilters({ ...filters, restaurant: e.target.value })}
+//                     >
+//                       <option value="RESTAURANT">RESTAURANT</option>
+//                       <option value="BAR">BAR</option>
+//                     </select>
+//                   </div>
+//                   <div className="filter-group">
+//                     <select
+//                       value={filters.service}
+//                       onChange={(e) => setFilters({ ...filters, service: e.target.value })}
+//                     >
+//                       <option value="DownSend">DownSend</option>
+//                       <option value="Delivery">Delivery</option>
+//                     </select>
+//                   </div>
+//                 </div>
+//                 {/* Date Range */}
+//                 <div className="date-inputs">
+//                   <div>
+//                     <div className="date-label">Top From</div>
+//                     <input
+//                       type="text"
+//                       value={filters.dateFrom}
+//                       onChange={(e) =>
+//                         setFilters({ ...filters, dateFrom: e.target.value })
+//                       }
+//                     />
+//                   </div>
+//                   <div className="date-separator">To</div>
+//                   <div>
+//                     <div className="date-label">To</div>
+//                     <input
+//                       type="text"
+//                       value={filters.dateTo}
+//                       onChange={(e) =>
+//                         setFilters({ ...filters, dateTo: e.target.value })
+//                       }
+//                     />
+//                   </div>
+//                 </div>
+//                 {/* Table */}
+//                 <div className="table-responsive">
+//                   <table>
+//                     <thead>
+//                       <tr>
+//                         <th>Item Name</th>
+//                         <th className="text-right">Qty</th>
+//                       </tr>
+//                     </thead>
+//                     <tbody>
+//                       {renderTableRows(topItemSales, 2)}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               </div>
+//             </div>
+
+//             {/* Top Sale Item */}
+//             <div className="dashboard-card">
+//               <div className="card-header">
+//                 <h3 className="card-title">Top Sale Item</h3>
+//                 <div className="card-tabs">
+//                   <button
+//                     className={`tab-btn ${activeTab === "current" ? "active" : ""}`}
+//                     onClick={() => setActiveTab("current")}
+//                   >
+//                     Current
+//                   </button>
+//                   <button
+//                     className={`tab-btn ${activeTab === "last" ? "active" : ""}`}
+//                     onClick={() => setActiveTab("last")}
+//                   >
+//                     Last
+//                   </button>
+//                 </div>
+//               </div>
+//               <div className="card-body">
+//                 <div className="table-responsive">
+//                   <table>
+//                     <thead>
+//                       <tr>
+//                         <th>Item Name</th>
+//                         <th className="text-right">Qty</th>
+//                       </tr>
+//                     </thead>
+//                     <tbody>
+//                       {renderTableRows(
+//                         activeTab === "current"
+//                           ? topSaleItems.current
+//                           : topSaleItems.last,
+//                         2
+//                       )}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               </div>
+//             </div>
+
+//             {/* Top Debtors */}
+//             <div className="dashboard-card">
+//               <div className="card-header">
+//                 <h3 className="card-title">Top Debtors</h3>
+//               </div>
+//               <div className="card-body">
+//                 <div className="table-responsive">
+//                   <table>
+//                     <thead>
+//                       <tr>
+//                         <th>Item Name</th>
+//                         <th className="text-right">Amount</th>
+//                       </tr>
+//                     </thead>
+//                     <tbody>
+//                       {renderTableRows(topDebtors, 2, "0")}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               </div>
+//               <div className="card-footer">
+//                 <a href="#" className="more-link">More...</a>
+//               </div>
+//             </div>
+
+//             {/* Top Creditors */}
+//             <div className="dashboard-card">
+//               <div className="card-header">
+//                 <h3 className="card-title">Top Creditors</h3>
+//               </div>
+//               <div className="card-body">
+//                 <div className="table-responsive">
+//                   <table>
+//                     <thead>
+//                       <tr>
+//                         <th>Item Name</th>
+//                         <th className="text-right">Amount</th>
+//                       </tr>
+//                     </thead>
+//                     <tbody>
+//                       {renderTableRows(topCreditors, 2, "0")}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               </div>
+//               <div className="card-footer">
+//                 <a href="#" className="more-link">More...</a>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* Action Cards Grid */}
+//           <div className="action-cards-grid">
+//             <div className="action-card red">
+//               <h4 className="action-title">Total Bill Cancel</h4>
+//               <div className="action-values">
+//                 <div className="action-value">
+//                   <span className="action-number">{actionCards.totalBillCancel[0]}</span>
+//                 </div>
+//                 <div className="action-value">
+//                   <span className="action-number">{actionCards.totalBillCancel[1]}</span>
+//                 </div>
+//               </div>
+//             </div>
+//             <div className="action-card blue">
+//               <h4 className="action-title">Bill Modify</h4>
+//               <div className="action-values">
+//                 <div className="action-value">
+//                   <span className="action-number">{actionCards.billModify[0]}</span>
+//                 </div>
+//                 <div className="action-value">
+//                   <span className="action-number">{actionCards.billModify[1]}</span>
+//                 </div>
+//               </div>
+//             </div>
+//             <div className="action-card green">
+//               <h4 className="action-title">Bill Discount</h4>
+//               <div className="action-values">
+//                 <div className="action-value">
+//                   <span className="action-number">{actionCards.billDiscount[0]}</span>
+//                 </div>
+//                 <div className="action-value">
+//                   <span className="action-number">{actionCards.billDiscount[1]}</span>
+//                 </div>
+//               </div>
+//             </div>
+//             <div className="action-card pink">
+//               <h4 className="action-title">Bill Reprint</h4>
+//               <div className="action-values">
+//                 <div className="action-value">
+//                   <span className="action-number">{actionCards.billReprint[0]}</span>
+//                 </div>
+//                 <div className="action-value">
+//                   <span className="action-number">{actionCards.billReprint[1]}</span>
+//                 </div>
+//               </div>
+//             </div>
+//             <div className="action-card orange">
+//               <h4 className="action-title">Void Item</h4>
+//               <div className="action-values">
+//                 <div className="action-value">
+//                   <span className="action-number">{actionCards.voidItem[0]}</span>
+//                 </div>
+//                 <div className="action-value">
+//                   <span className="action-number">{actionCards.voidItem[1]}</span>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
