@@ -235,3 +235,333 @@ export default function BanquetCalendar() {
     </div>
   );
 }
+
+
+// // src/pages/POS/Banquet/BanquetCalendar.js
+// import React, { useState, useEffect, useCallback } from "react";
+// import PosSidebar from "../../../components/sidebar/Possidebar";
+// import PosTopbar from "../../../components/layout/postopbar";
+// import { apiFetch } from "../../../lib/api";
+
+// export default function BanquetCalendar() {
+//   const [selectedDate, setSelectedDate] = useState("");
+//   const [calendarDays, setCalendarDays] = useState([]);
+//   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+//   const [banquetEvents, setBanquetEvents] = useState([]);
+//   const [loading, setLoading] = useState(false);
+
+//   // Generate 15-day slots starting from selectedDate or today
+//   const generateCalendarDays = useCallback((baseDateStr) => {
+//     const base = baseDateStr ? new Date(baseDateStr) : new Date();
+//     base.setHours(0, 0, 0, 0);
+//     const days = [];
+//     for (let i = 0; i < 15; i++) {
+//       const d = new Date(base);
+//       d.setDate(base.getDate() + i);
+//       days.push({
+//         isoDate: d.toISOString().slice(0, 10), // YYYY-MM-DD for matching
+//         label: d.toLocaleDateString("en-GB", {
+//           day: "2-digit",
+//           month: "short",
+//           weekday: "short",
+//         }),
+//       });
+//     }
+//     setCalendarDays(days);
+//   }, []);
+
+//   // Fetch banquet bookings/events for the calendar range
+//   const fetchBanquetEvents = useCallback(async () => {
+//     setLoading(true);
+//     try {
+//       if (!calendarDays.length) {
+//         setBanquetEvents([]);
+//         setLoading(false);
+//         return;
+//       }
+//       const startDate = calendarDays[0].isoDate;
+//       const endDate = calendarDays[calendarDays.length - 1].isoDate;
+
+//       const response = await apiFetch(
+//         `/api/banquet/events?startDate=${startDate}&endDate=${endDate}`,
+//         { method: "GET" }
+//       );
+
+//       if (response.success) {
+//         setBanquetEvents(response.data || []);
+//       } else {
+//         setBanquetEvents([]);
+//         console.error("Failed to load banquet events:", response.message);
+//       }
+//     } catch (err) {
+//       setBanquetEvents([]);
+//       console.error("Error fetching banquet events:", err);
+//     } finally {
+//       setLoading(false);
+//     }
+//   }, [calendarDays]);
+
+//   // Initialize calendar days whenever selectedDate changes
+//   useEffect(() => {
+//     generateCalendarDays(selectedDate);
+//   }, [selectedDate, generateCalendarDays]);
+
+//   // Fetch banquet events whenever calendarDays change
+//   useEffect(() => {
+//     fetchBanquetEvents();
+//   }, [fetchBanquetEvents]);
+
+//   // Sidebar collapse detection
+//   useEffect(() => {
+//     const handleSidebarChange = () => {
+//       const sidebar = document.querySelector(".rsb");
+//       if (sidebar) setSidebarCollapsed(sidebar.classList.contains("rsb--mini"));
+//     };
+//     handleSidebarChange();
+//     const observer = new MutationObserver(handleSidebarChange);
+//     const sidebar = document.querySelector(".rsb");
+//     if (sidebar) {
+//       observer.observe(sidebar, {
+//         attributes: true,
+//         attributeFilter: ["class"],
+//       });
+//     }
+//     return () => observer.disconnect();
+//   }, []);
+
+//   // Prepare unique venue-session keys for rows
+//   const venueSessionMap = {};
+//   banquetEvents.forEach((event) => {
+//     const key = `${event.venueName || "Unknown Venue"}||${event.sessionType || "General"}`;
+//     if (!venueSessionMap[key]) venueSessionMap[key] = [];
+//     venueSessionMap[key].push(event);
+//   });
+
+//   const rowKeys = Object.keys(venueSessionMap);
+
+//   // Generate calendar table cells content for each day and venue-session
+//   const renderCalendarCells = (eventsForRow) => {
+//     return calendarDays.map((day) => {
+//       const event = eventsForRow.find((e) => e.eventDate === day.isoDate);
+//       return (
+//         <td style={styles.td} key={day.isoDate}>
+//           {event ? (
+//             <div>
+//               <strong>{event.bookingName || event.guestName || "Booking"}</strong>
+//               <div>{event.bookingStatus}</div>
+//             </div>
+//           ) : (
+//             ""
+//           )}
+//         </td>
+//       );
+//     });
+//   };
+
+//   const styles = {
+//     layout: {
+//       display: "flex",
+//       minHeight: "100vh",
+//       backgroundColor: "#f5f5f5",
+//     },
+//     page: {
+//       flexGrow: 1,
+//       marginLeft: sidebarCollapsed ? "60px" : "240px",
+//       transition: "margin-left 0.3s ease",
+//       padding: 0,
+//     },
+//     container: {
+//       padding: "20px",
+//       backgroundColor: "#f5f5f5",
+//       minHeight: "100vh",
+//     },
+//     pageHeader: {
+//       display: "flex",
+//       alignItems: "center",
+//       backgroundColor: "#fff",
+//       padding: "15px 20px",
+//       marginBottom: "16px",
+//       borderRadius: "5px",
+//       boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+//     },
+//     pageIcon: {
+//       width: "40px",
+//       height: "40px",
+//       backgroundColor: "#f0f0f0",
+//       borderRadius: "5px",
+//       display: "flex",
+//       alignItems: "center",
+//       justifyContent: "center",
+//       fontSize: "20px",
+//       marginRight: "15px",
+//     },
+//     pageTitle: {
+//       margin: 0,
+//       fontSize: "22px",
+//       fontWeight: 600,
+//       color: "#333",
+//     },
+//     headerInfo: {
+//       fontSize: "12px",
+//       color: "#666",
+//       marginLeft: "26px",
+//     },
+//     btnAudit: {
+//       padding: "6px 16px",
+//       backgroundColor: "#1976d2",
+//       color: "white",
+//       border: "none",
+//       borderRadius: "4px",
+//       cursor: "pointer",
+//       fontSize: "13px",
+//       fontWeight: 500,
+//       marginLeft: "10px",
+//     },
+//     btnClose: {
+//       width: "30px",
+//       height: "30px",
+//       background: "transparent",
+//       border: "none",
+//       fontSize: "18px",
+//       color: "#666",
+//       cursor: "pointer",
+//       borderRadius: "50%",
+//     },
+//     controlBar: {
+//       display: "flex",
+//       alignItems: "center",
+//       justifyContent: "flex-end",
+//       gap: "10px",
+//       marginBottom: "10px",
+//       paddingRight: "8px",
+//     },
+//     dateInput: {
+//       padding: "4px 10px",
+//       fontSize: "15px",
+//       borderRadius: 4,
+//       border: "1px solid #aaa",
+//     },
+//     goBtn: {
+//       border: "none",
+//       background: "#1976d2",
+//       color: "#fff",
+//       borderRadius: 4,
+//       padding: "6px 20px",
+//       fontSize: "16px",
+//       fontWeight: 500,
+//       cursor: "pointer",
+//     },
+//     calendarTableContainer: {
+//       backgroundColor: "#fff",
+//       borderRadius: "5px",
+//       boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+//       marginTop: "10px",
+//       overflowX: "auto",
+//     },
+//     calendarTable: {
+//       width: "100%",
+//       borderCollapse: "collapse",
+//       tableLayout: "fixed",
+//       minWidth: 900,
+//     },
+//     th: {
+//       background: "#444",
+//       color: "#fff",
+//       fontWeight: 600,
+//       padding: "8px 4px",
+//       fontSize: "14px",
+//       borderRight: "1px solid #222",
+//     },
+//     td: {
+//       minWidth: 80,
+//       border: "1px solid #eee",
+//       textAlign: "center",
+//       padding: "6px",
+//       fontSize: "15px",
+//       verticalAlign: "top",
+//     },
+//     venueCol: { width: 180 },
+//     sessionCol: { width: 130 },
+//     noData: {
+//       padding: "40px",
+//       textAlign: "center",
+//       color: "#999",
+//     },
+//   };
+
+//   return (
+//     <div className="container">
+//       <PosTopbar />
+//       <div style={styles.layout}>
+//         <PosSidebar />
+//         <div style={styles.page}>
+//           <div style={styles.container}>
+//             {/* Header */}
+//             <div style={styles.pageHeader}>
+//               <div style={styles.pageIcon}>📅</div>
+//               <span style={styles.pageTitle}>Banquet Calendar</span>
+//             </div>
+//             {/* Filters / Control Bar */}
+//             <div style={styles.controlBar}>
+//               <input
+//                 type="date"
+//                 value={selectedDate}
+//                 onChange={(e) => setSelectedDate(e.target.value)}
+//                 style={styles.dateInput}
+//               />
+//               <button style={styles.goBtn} onClick={() => fetchBanquetEvents()}>
+//                 Go
+//               </button>
+//             </div>
+
+//             {/* Calendar Table */}
+//             <div style={styles.calendarTableContainer}>
+//               {loading ? (
+//                 <div style={styles.noData}>Loading banquet events...</div>
+//               ) : rowKeys.length > 0 ? (
+//                 <table style={styles.calendarTable}>
+//                   <thead>
+//                     <tr>
+//                       <th style={{ ...styles.th, ...styles.venueCol }}>Venue Name</th>
+//                       <th style={{ ...styles.th, ...styles.sessionCol }}>
+//                         Session Type
+//                       </th>
+//                       {calendarDays.map((d) => (
+//                         <th style={styles.th} key={d.isoDate}>
+//                           {d.label}
+//                         </th>
+//                       ))}
+//                     </tr>
+//                   </thead>
+//                   <tbody>
+//                     {rowKeys.map((key) => {
+//                       const [venueName, sessionType] = key.split("||");
+//                       const eventsForRow = venueSessionMap[key] || [];
+//                       return (
+//                         <tr key={key}>
+//                           <td style={styles.td}>{venueName}</td>
+//                           <td style={styles.td}>{sessionType}</td>
+//                           {renderCalendarCells(eventsForRow)}
+//                         </tr>
+//                       );
+//                     })}
+//                   </tbody>
+//                 </table>
+//               ) : (
+//                 <div style={styles.noData}>No banquet events available</div>
+//               )}
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//       <style>{`
+//         table tbody tr:hover {
+//           background-color: #f9f9f9;
+//         }
+//         button:hover:not(:disabled) {
+//           opacity: 0.9;
+//         }
+//       `}</style>
+//     </div>
+//   );
+// }

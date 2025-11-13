@@ -193,3 +193,242 @@ export default function FinancialYear() {
     </div>
   );
 }
+
+
+// import React, { useState, useEffect, useCallback } from "react";
+// import PosSidebar from "../../../components/sidebar/Possidebar";
+// import PosTopbar from "../../../components/layout/postopbar";
+// import { apiFetch } from "../../../lib/api";
+
+// export default function FinancialYear() {
+//   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+//   const [financialYears, setFinancialYears] = useState([]);
+//   const [loading, setLoading] = useState(false);
+//   const [saving, setSaving] = useState(false);
+
+//   // Fetch financial years from API
+//   const fetchFinancialYears = useCallback(async () => {
+//     setLoading(true);
+//     try {
+//       const response = await apiFetch("/api/settings/financial-years", { method: "GET" });
+//       if (response.success) {
+//         setFinancialYears(response.data || []);
+//       } else {
+//         throw new Error(response.message || "Failed to fetch financial years");
+//       }
+//     } catch (err) {
+//       console.error("Error fetching financial years:", err);
+//       setFinancialYears([]);
+//       alert(err.message || "Failed to load financial years");
+//     } finally {
+//       setLoading(false);
+//     }
+//   }, []);
+
+//   useEffect(() => {
+//     fetchFinancialYears();
+//   }, [fetchFinancialYears]);
+
+//   // Sidebar collapse detection
+//   useEffect(() => {
+//     const handleSidebarChange = () => {
+//       const sidebar = document.querySelector(".rsb");
+//       if (sidebar) setSidebarCollapsed(sidebar.classList.contains("rsb--mini"));
+//     };
+//     handleSidebarChange();
+//     const observer = new MutationObserver(handleSidebarChange);
+//     const sidebar = document.querySelector(".rsb");
+//     if (sidebar) {
+//       observer.observe(sidebar, {
+//         attributes: true,
+//         attributeFilter: ["class"],
+//       });
+//     }
+//     return () => observer.disconnect();
+//   }, []);
+
+//   // Set current financial year API call
+//   const setCurrentFinancialYear = useCallback(async (period) => {
+//     if (!window.confirm(`Set "${period}" as current financial year?`)) return;
+
+//     setSaving(true);
+//     try {
+//       const response = await apiFetch("/api/settings/financial-years/current", {
+//         method: "POST",
+//         body: JSON.stringify({ period }),
+//         headers: { "Content-Type": "application/json" },
+//       });
+
+//       if (response.success) {
+//         alert("Current financial year updated successfully!");
+//         fetchFinancialYears();
+//       } else {
+//         throw new Error(response.message || "Failed to update current financial year");
+//       }
+//     } catch (err) {
+//       console.error("Error updating current financial year:", err);
+//       alert(err.message || "Failed to update current financial year");
+//     } finally {
+//       setSaving(false);
+//     }
+//   }, [fetchFinancialYears]);
+
+//   const styles = {
+//     layout: {
+//       display: "flex",
+//       minHeight: "100vh",
+//       backgroundColor: "#f5f5f5",
+//     },
+//     page: {
+//       flexGrow: 1,
+//       marginLeft: sidebarCollapsed ? "60px" : "240px",
+//       transition: "margin-left 0.3s ease",
+//       padding: 0,
+//     },
+//     container: {
+//       padding: "20px",
+//       backgroundColor: "#f5f5f5",
+//       minHeight: "100vh",
+//     },
+//     pageHeader: {
+//       display: "flex",
+//       alignItems: "center",
+//       backgroundColor: "#fff",
+//       padding: "15px 20px",
+//       marginBottom: "20px",
+//       borderRadius: "5px",
+//       boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+//     },
+//     pageIcon: {
+//       width: "40px",
+//       height: "40px",
+//       backgroundColor: "#f0f0f0",
+//       borderRadius: "5px",
+//       display: "flex",
+//       alignItems: "center",
+//       justifyContent: "center",
+//       fontSize: "20px",
+//       marginRight: "15px",
+//     },
+//     pageTitle: {
+//       margin: 0,
+//       fontSize: "20px",
+//       fontWeight: 600,
+//       color: "#333",
+//     },
+//     headerInfo: {
+//       fontSize: "12px",
+//       color: "#666",
+//       marginLeft: "26px",
+//     },
+//     btnAudit: {
+//       padding: "6px 16px",
+//       backgroundColor: "#1976d2",
+//       color: "white",
+//       border: "none",
+//       borderRadius: "4px",
+//       cursor: "pointer",
+//       fontSize: "13px",
+//       fontWeight: 500,
+//       marginLeft: "10px",
+//     },
+//     dataTableContainer: {
+//       backgroundColor: "#fff",
+//       borderRadius: "5px",
+//       boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+//       overflow: "auto",
+//       marginTop: "12px",
+//     },
+//     dataTable: {
+//       width: "100%",
+//       borderCollapse: "collapse",
+//     },
+//     tableHead: {
+//       backgroundColor: "#e0e0e0",
+//     },
+//     th: {
+//       padding: "8px 10px",
+//       textAlign: "left",
+//       fontSize: "14px",
+//       fontWeight: 600,
+//       color: "#333",
+//       borderBottom: "2px solid #ccc",
+//       whiteSpace: "nowrap",
+//     },
+//     td: {
+//       padding: "8px 10px",
+//       fontSize: "14px",
+//       color: "#666",
+//       borderBottom: "1px solid #eee",
+//       whiteSpace: "nowrap",
+//     },
+//     actionBtn: {
+//       backgroundColor: "#43a047",
+//       color: "white",
+//       border: "none",
+//       borderRadius: "4px",
+//       padding: "7px 20px",
+//       fontWeight: 500,
+//       fontSize: "14px",
+//       cursor: "pointer",
+//     },
+//   };
+
+//   return (
+//     <div className="container">
+//       <PosTopbar />
+//       <div style={styles.layout}>
+//         <PosSidebar />
+//         <div style={styles.page}>
+//           <div style={styles.container}>
+//             {/* Header */}
+//             <div style={styles.pageHeader}>
+//               <div style={styles.pageIcon}>📅</div>
+//               <span style={styles.pageTitle}>Financial Year</span>
+//             </div>
+
+//             {/* Table */}
+//             <div style={styles.dataTableContainer}>
+//               <table style={styles.dataTable}>
+//                 <thead style={styles.tableHead}>
+//                   <tr>
+//                     <th style={styles.th}>Financial Year</th>
+//                     <th style={styles.th}>Current</th>
+//                     <th style={styles.th}>Action</th>
+//                   </tr>
+//                 </thead>
+//                 <tbody>
+//                   {loading ? (
+//                     <tr>
+//                       <td style={styles.td} colSpan={3}>Loading...</td>
+//                     </tr>
+//                   ) : financialYears.length > 0 ? (
+//                     financialYears.map((row, idx) => (
+//                       <tr key={idx}>
+//                         <td style={styles.td}>{row.period}</td>
+//                         <td style={styles.td}>{row.current}</td>
+//                         <td style={styles.td}>
+//                           <button
+//                             style={styles.actionBtn}
+//                             onClick={() => setCurrentFinancialYear(row.period)}
+//                             disabled={saving || row.current === "Current"}
+//                           >
+//                             {saving && row.current !== "Current" ? "Saving..." : "Set Current Session"}
+//                           </button>
+//                         </td>
+//                       </tr>
+//                     ))
+//                   ) : (
+//                     <tr>
+//                       <td style={styles.td} colSpan={3}>No financial years found</td>
+//                     </tr>
+//                   )}
+//                 </tbody>
+//               </table>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
